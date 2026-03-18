@@ -1,3 +1,4 @@
+-- Active: 1767537137339@@127.0.0.1@3306@db_gundaling
 <?php
 
 use Illuminate\Support\Str;
