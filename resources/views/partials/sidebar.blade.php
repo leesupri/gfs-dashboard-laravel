@@ -9,7 +9,7 @@
     ['label' => 'Consumption DI', 'href' => route('reports.consumptionDetailInvoice'), 'key' => 'reports.consumptionDetailInvoice'],
     ['label' => 'Consumption WH', 'href' => route('reports.consumptionWarehouse'), 'key' => 'reports.consumptionWarehouse'],
     ['label' => 'Inventory',      'href' => '#', 'key' => 'inventory'],
-    ['label' => 'Recipes',        'href' => '#', 'key' => 'recipes'],
+    ['label' => 'Recipes Report', 'href' => route('reports.recipe'), 'key' => 'reports-recipe'],
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
 

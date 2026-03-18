@@ -8,6 +8,7 @@ use App\Http\Controllers\SummarySalesController;
 use App\Http\Controllers\VoidReportController;
 use App\Http\Controllers\Reports\SalesConsumptionWarehouseController;
 use App\Http\Controllers\Reports\SalesConsumptionDetailInvoiceController;
+use App\Http\Controllers\Reports\RecipeReportController;
 
 
 Route::get('/', function () {
@@ -27,6 +28,8 @@ Route::get('/reports/consumption-warehouse', [SalesConsumptionWarehouseControlle
 Route::get('/reports/consumption-warehouse/export', [SalesConsumptionWarehouseController::class, 'export'])->name('reports.consumptionWarehouse.export');
 Route::get('/reports/consumption-detail-invoice', [SalesConsumptionDetailInvoiceController::class, 'index'])->name('reports.consumptionDetailInvoice');
 Route::get('/reports/consumption-detail-invoice/export', [SalesConsumptionDetailInvoiceController::class, 'export'])->name('reports.consumptionDetailInvoice.export');
+Route::get('/reports/recipe', [RecipeReportController::class, 'index'])->name('reports.recipe');
+Route::get('/reports/recipe/export', [RecipeReportController::class, 'export'])->name('reports.recipe.export');
 Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
 Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page
