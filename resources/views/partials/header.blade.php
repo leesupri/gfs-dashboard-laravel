@@ -8,7 +8,9 @@
     'summarySales.index' => 'Summary Sales',
     'reports.void' => 'Void Report',
     'reports.consumptionWarehouse' => 'Reports consumption by warehouse',
-    'reports.recipe'=> 'Master Recipe Report'
+    'reports.recipe'=> 'Master Recipe Report',
+    'reports.orderBoard'=>'Order Board All',
+
   ];
 
   $routeName = request()->route()?->getName();

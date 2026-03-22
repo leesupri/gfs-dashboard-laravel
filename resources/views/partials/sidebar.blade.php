@@ -3,6 +3,7 @@
     ['label' => 'Dashboard',      'href' => route('dashboard'),           'key' => 'dashboard'],
     ['label' => 'Sales',          'href' => route('sales.index'),         'key' => 'sales.index'],
     ['label' => 'ItemSales',      'href' => route('itemSales.index'),     'key' => 'itemSales.index'],
+    ['label' => 'Order Board', 'href' => route('reports.orderBoard'), 'key' => 'reports.orderBoard'],
     ['label' => 'NoSales',        'href' => route('noSales.index'),       'key' => 'noSales.index'],
     ['label' => 'Summary Sales',  'href' => route('summarySales.index'),  'key' => 'summarySales.index'],
     ['label' => 'Void report',    'href' => route('reports.void'),        'key' => 'reports.void'],

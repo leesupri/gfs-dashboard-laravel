@@ -10,6 +10,8 @@ use App\Http\Controllers\VoidReportController;
 use App\Http\Controllers\Reports\SalesConsumptionWarehouseController;
 use App\Http\Controllers\Reports\SalesConsumptionDetailInvoiceController;
 use App\Http\Controllers\Reports\RecipeReportController;
+use App\Http\Controllers\Reports\OrderBoardController;
+
 
 // Route::get('/', function () {
 //     return view('dashboard', [
@@ -32,6 +34,7 @@ Route::get('/reports/consumption-detail-invoice', [SalesConsumptionDetailInvoice
 Route::get('/reports/consumption-detail-invoice/export', [SalesConsumptionDetailInvoiceController::class, 'export'])->name('reports.consumptionDetailInvoice.export');
 Route::get('/reports/recipe', [RecipeReportController::class, 'index'])->name('reports.recipe');
 Route::get('/reports/recipe/export', [RecipeReportController::class, 'export'])->name('reports.recipe.export');
+Route::get('/reports/order-board', [OrderBoardController::class, 'index'])->name('reports.orderBoard');
 Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
 Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page
