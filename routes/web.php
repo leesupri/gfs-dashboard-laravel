@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ItemSalesController;
 use App\Http\Controllers\noSalesController;
@@ -10,13 +11,14 @@ use App\Http\Controllers\Reports\SalesConsumptionWarehouseController;
 use App\Http\Controllers\Reports\SalesConsumptionDetailInvoiceController;
 use App\Http\Controllers\Reports\RecipeReportController;
 
-
-Route::get('/', function () {
-    return view('dashboard', [
-        'title' => 'Dashboard',
-        'active' => 'dashboard',
-    ]);
-})->name('dashboard');
+// Route::get('/', function () {
+//     return view('dashboard', [
+//         'title' => 'Dashboard',
+//         'active' => 'dashboard',
+//     ]);
+// })->name('dashboard');
+Route::redirect('/', '/dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/item-sales', [ItemSalesController::class, 'index'])->name('itemSales.index');
 Route::get('/item-sales/export', [ItemSalesController::class, 'exportCsv'])->name('itemSales.export');
 Route::get('/no-sales', [NoSalesController::class, 'index'])->name('noSales.index');
