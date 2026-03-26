@@ -172,7 +172,7 @@ class MarketListController extends Controller
                     $row->recipe_uom,
                     (float) $row->purchase_to_inventory_conversion,
                     (float) $row->inventory_to_recipe_conversion,
-                    (float) $row->purchase_price,
+                    number_format((float) $row->purchase_price, 2, ',', '.'),
                     number_format((float)$row->average_cost, 2, ',', '.'),
                     $row->saved,
                     $row->updated,
