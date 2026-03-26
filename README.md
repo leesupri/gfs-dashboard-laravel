@@ -63,6 +63,7 @@ DB_PASSWORD=gfs080621
 
 npm run dev
 php artisan serve
-php artisan config:clear
-php artisan route:clear
 php artisan optimize:clear
+php artisan route:clear
+php artisan config:clear
+php artisan view:clear

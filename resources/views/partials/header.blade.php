@@ -10,6 +10,7 @@
     'reports.consumptionWarehouse' => 'Reports consumption by warehouse',
     'reports.recipe'=> 'Master Recipe Report',
     'reports.orderBoard'=>'Order Board All',
+    'reports.activityLog'=>'Activity Log',
 
   ];
 

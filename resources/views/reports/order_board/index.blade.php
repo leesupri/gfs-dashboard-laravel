@@ -1,3 +1,23 @@
+@php
+function deptBadge($dept) {
+    $d = strtoupper(trim($dept ?? ''));
+
+    if (str_contains($d, 'BEVERAGE')) {
+        return ['label' => 'BEVERAGE', 'class' => 'bg-blue-100 text-blue-700'];
+    }
+
+    if (str_contains($d, 'FOOD')) {
+        return ['label' => 'FOOD', 'class' => 'bg-red-100 text-red-700'];
+    }
+
+    if (str_contains($d, 'BAR')) {
+        return ['label' => 'BAR', 'class' => 'bg-purple-100 text-purple-700'];
+    }
+
+    return ['label' => $d ?: 'OTHER', 'class' => 'bg-gray-100 text-gray-700'];
+}
+@endphp
+
 @extends('layouts.app')
 
 @section('content')
@@ -135,6 +155,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @foreach($bill->lines as $line)
+                            
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-2 whitespace-nowrap">
                                         {{ $line->created ? \Carbon\Carbon::parse($line->created)->format('d/m/Y H:i:s') : '-' }}
@@ -154,9 +175,17 @@
                                     <td class="px-4 py-2">
                                         {{ $line->category ?: '-' }}
                                     </td>
-                                    <td class="px-4 py-2">
-                                        <div>{{ $line->department ?: '-' }}</div>
-                                    </td>
+                                    @php $dept = deptBadge($line->department); @endphp
+
+<td class="px-4 py-2">
+    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold {{ $dept['class'] }}">
+        {{ $dept['label'] }}
+    </span>
+
+    <!-- <div class="text-xs text-gray-500 mt-1">
+        {{ $line->createdAtHo ?: '-' }}
+    </div> -->
+</td>
                                     <td class="px-4 py-2">
                                         {{ $line->employee ?: '-' }}
                                     </td>

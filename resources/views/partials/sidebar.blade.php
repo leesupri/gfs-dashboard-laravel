@@ -11,6 +11,8 @@
     ['label' => 'Consumption WH', 'href' => route('reports.consumptionWarehouse'), 'key' => 'reports.consumptionWarehouse'],
     ['label' => 'Inventory',      'href' => '#', 'key' => 'inventory'],
     ['label' => 'Recipes Report', 'href' => route('reports.recipe'), 'key' => 'reports.recipe'],
+    ['label' => 'Activity Logs', 'href' => route('reports.activityLog'), 'key' => 'reports.activityLog'],
+    ['label' => 'Market List', 'href' => route('reports.marketList'), 'key' => 'reports.marketList'],
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
 
