@@ -15,6 +15,8 @@ use App\Http\Controllers\Reports\OrderBoardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductionSummaryController;
 use App\Http\Controllers\ProductionCardController;
+use App\Http\Controllers\PurchaseSummaryController;
+use App\Http\Controllers\PurchaseDetailController;
 
 
 // Route::get('/', function () {
@@ -43,6 +45,9 @@ Route::get('/reports/market-list', [MarketListController::class, 'marketList'])-
 Route::get('/reports/order-board', [OrderBoardController::class, 'index'])->name('reports.orderBoard');
 Route::get('/reports/production-summary', [ProductionSummaryController::class, 'index'])->name('reports.productionSummary');
 Route::get('/reports/production-card', [ProductionCardController::class, 'index'])->name('reports.productionCard.index');
+Route::get('/reports/purchase-summary', [PurchaseSummaryController::class, 'index'])->name('reports.purchaseSummary');
+Route::get('/reports/purchase-detail', [PurchaseDetailController::class, 'index'])->name('reports.purchaseDetail');
+
 Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
 Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page

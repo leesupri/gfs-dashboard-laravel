@@ -15,6 +15,8 @@
     ['label' => 'Market List', 'href' => route('reports.marketList'), 'key' => 'reports.marketList'],
     ['label' => 'Production Summary', 'href' => route('reports.productionSummary'), 'key' => 'reports.productionSummary'],
     ['label' => 'Production Card', 'href' => route('reports.productionCard.index'), 'key' => 'reports.productionCard.index'],
+    ['label' => 'Purchase Summary', 'href' => route('reports.purchaseSummary'), 'key' => 'reports.purchaseSummary'],
+    ['label' => 'Purchase Detail', 'href' => route('reports.purchaseDetail'), 'key' => 'reports.purchaseDetail'],
     
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
