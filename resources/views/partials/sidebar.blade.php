@@ -13,6 +13,9 @@
     ['label' => 'Recipes Report', 'href' => route('reports.recipe'), 'key' => 'reports.recipe'],
     ['label' => 'Activity Logs', 'href' => route('reports.activityLog'), 'key' => 'reports.activityLog'],
     ['label' => 'Market List', 'href' => route('reports.marketList'), 'key' => 'reports.marketList'],
+    ['label' => 'Production Summary', 'href' => route('reports.productionSummary'), 'key' => 'reports.productionSummary'],
+    ['label' => 'Production Card', 'href' => route('reports.productionCard.index'), 'key' => 'reports.productionCard.index'],
+    
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
 

@@ -11,6 +11,10 @@
     'reports.recipe'=> 'Master Recipe Report',
     'reports.orderBoard'=>'Order Board All',
     'reports.activityLog'=>'Activity Log',
+    'reports.marketList'=>'Market List',
+    'reports.productionSummary'=>'Production Summary',
+    'reports.productionCard.index'=>'Production List Card',
+    'reports.productionCard.show'=>'Production List Details',
 
   ];
 

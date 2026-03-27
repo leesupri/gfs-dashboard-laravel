@@ -13,6 +13,8 @@ use App\Http\Controllers\Reports\SalesConsumptionDetailInvoiceController;
 use App\Http\Controllers\Reports\RecipeReportController;
 use App\Http\Controllers\Reports\OrderBoardController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProductionSummaryController;
+use App\Http\Controllers\ProductionCardController;
 
 
 // Route::get('/', function () {
@@ -39,9 +41,14 @@ Route::get('/reports/recipe/export', [RecipeReportController::class, 'export'])-
 Route::get('/reports/activity-log', [ReportController::class, 'activityLog'])->name('reports.activityLog');
 Route::get('/reports/market-list', [MarketListController::class, 'marketList'])->name('reports.marketList');
 Route::get('/reports/order-board', [OrderBoardController::class, 'index'])->name('reports.orderBoard');
+Route::get('/reports/production-summary', [ProductionSummaryController::class, 'index'])->name('reports.productionSummary');
+Route::get('/reports/production-card', [ProductionCardController::class, 'index'])->name('reports.productionCard.index');
 Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
 Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page
 Route::get('/sales/{invoice_id}/receipt', [SalesController::class, 'receipt'])
-  ->whereNumber('invoice_id')
-  ->name('sales.receipt');
+    ->whereNumber('invoice_id')
+    ->name('sales.receipt');
+Route::get('/reports/production-card/{id}', [ProductionCardController::class, 'show'])
+    ->whereNumber('id')
+    ->name('reports.productionCard.show');
