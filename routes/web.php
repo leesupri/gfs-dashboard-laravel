@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductionSummaryController;
 use App\Http\Controllers\ProductionCardController;
 use App\Http\Controllers\PurchaseSummaryController;
 use App\Http\Controllers\PurchaseDetailController;
+use App\Http\Controllers\PurchaseDetailPartnerController;
 
 
 // Route::get('/', function () {
@@ -47,7 +48,7 @@ Route::get('/reports/production-summary', [ProductionSummaryController::class, '
 Route::get('/reports/production-card', [ProductionCardController::class, 'index'])->name('reports.productionCard.index');
 Route::get('/reports/purchase-summary', [PurchaseSummaryController::class, 'index'])->name('reports.purchaseSummary');
 Route::get('/reports/purchase-detail', [PurchaseDetailController::class, 'index'])->name('reports.purchaseDetail');
-
+Route::get('/reports/purchase-detail-partner', [PurchaseDetailPartnerController::class, 'index'])->name('reports.purchaseDetailPartner');
 Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
 Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page

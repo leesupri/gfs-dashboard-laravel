@@ -37,6 +37,10 @@
                class="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
                 Back to Summary
             </a>
+            <a href="{{ route('reports.purchaseDetailPartner', request()->query()) }}"
+   class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+    Group By Partner
+</a>
 
             <a href="{{ route('reports.purchaseDetail', array_merge(request()->query(), ['export' => 'csv'])) }}"
                class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">

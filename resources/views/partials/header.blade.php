@@ -15,6 +15,8 @@
     'reports.productionSummary'=>'Production Summary',
     'reports.productionCard.index'=>'Production List Card',
     'reports.productionCard.show'=>'Production List Details',
+    'reports.purchaseSummary'=>'Purchase Summary List',
+    'reports.purchaseDetail'=>'Purchase detail card',
 
   ];
 

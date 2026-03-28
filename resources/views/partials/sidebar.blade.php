@@ -1,3 +1,4 @@
+<!-- resources\views\partials\sidebar.blade.php -->
 @php
   $nav = [
     ['label' => 'Dashboard',      'href' => route('dashboard'),           'key' => 'dashboard'],
@@ -17,7 +18,7 @@
     ['label' => 'Production Card', 'href' => route('reports.productionCard.index'), 'key' => 'reports.productionCard.index'],
     ['label' => 'Purchase Summary', 'href' => route('reports.purchaseSummary'), 'key' => 'reports.purchaseSummary'],
     ['label' => 'Purchase Detail', 'href' => route('reports.purchaseDetail'), 'key' => 'reports.purchaseDetail'],
-    
+    ['label' => 'Purchase Detail by Parther', 'href' => route('reports.purchaseDetailPartner'), 'key' => 'reports.purchaseDetailPartner'],
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
 
