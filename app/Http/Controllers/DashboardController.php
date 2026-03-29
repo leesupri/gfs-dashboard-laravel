@@ -18,7 +18,7 @@ class DashboardController extends Controller
         /* =========================
          * KPI
          * ========================= */
-        $kpi = DB::table('tbl_sales')
+        $kpi = DB::connection('reports_mysql')->table('tbl_sales')
             ->where('closed', 1)
             ->where('voidCheck', 0)
             ->whereBetween('date', [$from, $to])
@@ -32,7 +32,7 @@ class DashboardController extends Controller
         /* =========================
          * Department Sales
          * ========================= */
-        $byDept = DB::table('v_order_index')
+        $byDept = DB::connection('reports_mysql')->table('v_order_index')
             ->whereBetween('created', [$from, $to])
             ->whereRaw("COALESCE(NULLIF(TRIM(description),''),'') <> ''")
             ->selectRaw("
@@ -46,7 +46,7 @@ class DashboardController extends Controller
         /* =========================
          * Category Sales
          * ========================= */
-        $byCategory = DB::table('v_order_index')
+        $byCategory = DB::connection('reports_mysql')->table('v_order_index')
             ->whereBetween('created', [$from, $to])
             ->whereRaw("COALESCE(NULLIF(TRIM(description),''),'') <> ''")
             ->selectRaw("
@@ -61,7 +61,7 @@ class DashboardController extends Controller
         /* =========================
          * Top Products
          * ========================= */
-        $topProducts = DB::table('v_order_index')
+        $topProducts = DB::connection('reports_mysql')->table('v_order_index')
             ->whereBetween('created', [$from, $to])
             ->whereRaw("COALESCE(NULLIF(TRIM(description),''),'') <> ''")
             ->selectRaw("
@@ -77,7 +77,7 @@ class DashboardController extends Controller
         /* =========================
          * Hourly Sales
          * ========================= */
-        $hourlyRaw = DB::table('tbl_sales')
+        $hourlyRaw = DB::connection('reports_mysql')->table('tbl_sales')
             ->where('closed', 1)
             ->where('voidCheck', 0)
             ->whereBetween('closedTime', [$from, $to])
@@ -102,7 +102,7 @@ class DashboardController extends Controller
         /* =========================
          * Payment Breakdown
          * ========================= */
-        $paymentRows = DB::table('v_payment_index')
+        $paymentRows = DB::connection('reports_mysql')->table('v_payment_index')
             ->whereBetween('created', [$from, $to])
             ->selectRaw("
                 CASE
@@ -121,7 +121,7 @@ class DashboardController extends Controller
         /* =========================
          * Outlet Comparison
          * ========================= */
-        $outletRows = DB::table(DB::raw("
+        $outletRows = DB::connection('reports_mysql')->table(DB::raw("
     (
         SELECT 
             CASE

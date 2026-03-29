@@ -21,7 +21,7 @@ class OrderBoardController extends Controller
         $category   = trim((string) $request->query('category', ''));
         $q          = trim((string) $request->query('q', ''));
 
-        $rows = DB::table('v_order_all')
+        $rows = DB::connection('reports_mysql')->table('v_order_all')
             ->select([
                 'id',
                 'invoice_id',

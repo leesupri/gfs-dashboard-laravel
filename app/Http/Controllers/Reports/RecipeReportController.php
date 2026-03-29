@@ -122,7 +122,7 @@ class RecipeReportController extends Controller
 
     private function buildQuery(string $q, string $sales, string $purchased, string $stocked, bool $hideZero)
     {
-        $query = DB::table('tbl_recipes as r')
+        $query = DB::connection('reports_mysql')->table('tbl_recipes as r')
             ->join('tbl_items as item', 'r.item_id', '=', 'item.id')
             ->join('tbl_items as recipe', 'r.recipe_item_id', '=', 'recipe.id')
             ->selectRaw("

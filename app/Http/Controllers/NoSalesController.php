@@ -19,7 +19,7 @@ class NoSalesController extends Controller
         $to   = $end   ? Carbon::parse($end)->endOfDay()   : now()->endOfDay();
 
         // 🔹 Receipt-style rows (NO aggregation)
-        $rows = DB::table('tbl_sales_lines as sl')
+        $rows = DB::connection('reports_mysql')->table('tbl_sales_lines as sl')
             ->join('tbl_sales as s','sl.sales_id','=','s.id')
             ->leftJoin('tbl_employees as e','s.closedBy_id','=','e.id')
             ->whereBetween('s.date', [$from, $to])
@@ -85,7 +85,7 @@ class NoSalesController extends Controller
         $from = Carbon::parse($request->query('start'))->startOfDay();
         $to   = Carbon::parse($request->query('end'))->endOfDay();
 
-        $rows = DB::table('tbl_sales_lines as sl')
+        $rows = DB::connection('reports_mysql')->table('tbl_sales_lines as sl')
             ->join('tbl_sales as s','sl.sales_id','=','s.id')
             ->leftJoin('tbl_employees as e','s.closedBy_id','=','e.id')
             ->leftJoin('tbl_customers as cu','s.customer_id','=','cu.id')

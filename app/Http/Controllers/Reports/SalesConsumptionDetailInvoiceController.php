@@ -24,7 +24,7 @@ class SalesConsumptionDetailInvoiceController extends Controller
         $warehouse = trim((string) $request->input('warehouse', ''));
         $item      = trim((string) $request->input('item', ''));
 
-        $rows = DB::table('tbl_sales_consumptions as sc')
+        $rows = DB::connection('reports_mysql')->table('tbl_sales_consumptions as sc')
             ->join('tbl_sales_consumption_lines as scl', 'scl.sales_consumption_id', '=', 'sc.id')
             ->join('tbl_items as item', 'scl.item_id', '=', 'item.id')
             ->join('tbl_categories as cat', 'item.category_id', '=', 'cat.id')

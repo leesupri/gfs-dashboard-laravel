@@ -175,7 +175,7 @@ class SummarySalesController extends Controller
 
     private function summaryTotals($from,$to)
     {
-        return DB::table('tbl_sales')
+        return DB::connection('reports_mysql')->table('tbl_sales')
             ->whereBetween('date', [$from,$to])
             ->whereNotNull('invoice_id')
             ->where('closed',1)
@@ -192,7 +192,7 @@ class SummarySalesController extends Controller
     }
     private function departmentSummary($from, $to)
 {
-    $rows = DB::table('v_order_index')
+    $rows = DB::connection('reports_mysql')->table('v_order_index')
         ->whereBetween('date', [$from, $to])
         ->selectRaw('
             department,
@@ -211,7 +211,7 @@ class SummarySalesController extends Controller
 
     private function paymentSummary($from, $to)
 {
-    $rows = DB::table('v_payment_index')
+    $rows = DB::connection('reports_mysql')->table('v_payment_index')
         ->whereBetween('date', [$from, $to])
         ->selectRaw('
             name,
@@ -235,7 +235,7 @@ class SummarySalesController extends Controller
 
     private function profitSummary($from,$to)
     {
-        $row = DB::table('v_order_index')
+        $row = DB::connection('reports_mysql')->table('v_order_index')
         ->whereBetween('date', [$from, $to])
         ->selectRaw('
             SUM(quantity * unitPrice) subtotal,
@@ -255,7 +255,7 @@ class SummarySalesController extends Controller
 
    private function voidSummary($from, $to)
 {
-    return DB::table('v_void_order_index')
+    return DB::connection('reports_mysql')->table('v_void_order_index')
         ->whereBetween('date', [$from, $to])
         ->selectRaw('
             description,
@@ -269,7 +269,7 @@ class SummarySalesController extends Controller
 
     private function categorySummary($from, $to)
 {
-    $rows = DB::table('v_order_index')
+    $rows = DB::connection('reports_mysql')->table('v_order_index')
         ->whereBetween('date', [$from, $to])
         ->whereNotNull('invoice_id')
         ->selectRaw('
@@ -288,7 +288,7 @@ class SummarySalesController extends Controller
 }
 private function visitorStats($from, $to)
 {
-    return DB::table('v_sales_index')
+    return DB::connection('reports_mysql')->table('v_sales_index')
         ->whereBetween('date', [$from, $to])
         ->selectRaw('
             SUM(total) ttl,

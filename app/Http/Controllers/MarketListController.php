@@ -17,7 +17,7 @@ class MarketListController extends Controller
         $q = trim((string) $request->get('q', ''));
         $export = trim((string) $request->get('export', ''));
 
-        $baseQuery = DB::table('tbl_items as i')
+        $baseQuery = DB::connection('reports_mysql')->table('tbl_items as i')
             ->leftJoin('tbl_categories as c', 'c.id', '=', 'i.category_id')
             ->where(function ($query) {
                 $query->where('i.stocked', 1)

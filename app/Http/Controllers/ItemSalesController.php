@@ -35,9 +35,9 @@ class ItemSalesController extends Controller
         $hasService = (float)$kpi['service'] != 0;
         $hasTax     = (float)$kpi['tax'] != 0;
 
-        $departments = DB::table('tbl_departments')->orderBy('name')->pluck('name');
+        $departments = DB::connection('reports_mysql')->table('tbl_departments')->orderBy('name')->pluck('name');
 
-        $categories = DB::table('tbl_categories as c')
+        $categories = DB::connection('reports_mysql')->table('tbl_categories as c')
             ->leftJoin('tbl_departments as d', 'c.department_id', '=', 'd.id')
             ->select('c.name', 'd.name as department')
             ->orderBy('d.name')->orderBy('c.name')
@@ -155,7 +155,7 @@ class ItemSalesController extends Controller
 
     private function buildRows($filters, $from, $to, $diFrom, $diTo)
     {
-        $temp = DB::table('tbl_sales as s')
+        $temp = DB::connection('reports_mysql')->table('tbl_sales as s')
             ->join('tbl_sales_lines as sl', 's.id', '=', 'sl.sales_id')
             ->whereBetween('s.dateIndex', [$diFrom, $diTo])
             ->whereBetween('s.date', [$from, $to])
@@ -171,7 +171,7 @@ class ItemSalesController extends Controller
                 SUM(sl.tax1Amount + sl.tax2Amount + sl.tax3Amount) tax
             ');
 
-        $q = DB::table('tbl_items as i')
+        $q = DB::connection('reports_mysql')->table('tbl_items as i')
             ->leftJoinSub($temp, 't', 'i.id', '=', 't.item_id')
             ->leftJoin('tbl_categories as c', 'i.category_id', '=', 'c.id')
             ->leftJoin('tbl_departments as d', 'c.department_id', '=', 'd.id')

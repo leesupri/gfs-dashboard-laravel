@@ -22,10 +22,17 @@
     ['label' => 'Reports',        'href' => '#', 'key' => 'reports'],
   ];
 
+  
+
   $routeName = request()->route()?->getName() ?? '';
+  $staffUser = $currentStaffUser ?? null;
+
+  $nav = collect($nav)->filter(function ($item) use ($staffUser) {
+      return $staffUser && $staffUser->hasAccess($item['key']);
+  })->values()->all();
 @endphp
 
-<aside class="hidden md:flex md:w-64 md:flex-col md:border-r md:border-gray-200 md:bg-white md:h-screen md:shrink-0">
+<aside class="hidden md:flex md:w-64 md:flex-col md:border-r md:border-gray-200 md:bg-white md:shrink-0">
   <div class="flex h-14 items-center gap-2 border-b border-gray-200 px-4">
     <div class="flex items-center gap-2">
   <img
@@ -36,7 +43,7 @@
 </div>
     <div class="leading-tight">
       <div class="text-sm font-semibold">GFS Dashboard</div>
-      <div class="text-xs text-gray-500">Admin</div>
+      <div class="text-xs text-gray-500">{{ $currentStaffUser->title ?? 'User' }}</div>
     </div>
   </div>
 
@@ -57,9 +64,27 @@
     @endforeach
   </nav>
 
-  <div class="border-t border-gray-200 p-3">
-    <a href="#" class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-      Settings
+  <div class="border-t border-gray-200 p-3 space-y-1">
+  @if(($currentStaffUser ?? null)?->hasAccess('settings.staff'))
+    <a href="{{ route('settings.staff') }}" class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+      Staff Settings
     </a>
+  @endif
+
+  @if(($currentStaffUser ?? null)?->hasAccess('settings.security'))
+    <a href="{{ route('settings.security') }}" class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+      Security Settings
+    </a>
+  @endif
+
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="w-full text-left rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50">
+      Logout
+    </button>
+  </form>
   </div>
+
+  
+
 </aside>

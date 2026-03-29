@@ -18,7 +18,7 @@ class VoidReportController extends Controller
             [$start, $end] = [$end, $start];
         }
 
-        $rows = DB::table('tbl_sales_lines as sl')
+        $rows = DB::connection('reports_mysql')->table('tbl_sales_lines as sl')
             ->join('tbl_sales as s', 'sl.sales_id', '=', 's.id')
             ->join('tbl_employees as e', 'sl.employee_id', '=', 'e.id')
             ->join('tbl_items as i', 'sl.item_id', '=', 'i.id')

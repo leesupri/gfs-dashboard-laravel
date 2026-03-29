@@ -21,7 +21,7 @@ class PurchaseDetailPartnerController extends Controller
         $from = Carbon::parse($start)->startOfDay();
         $to = Carbon::parse($end)->endOfDay();
 
-        $baseQuery = DB::table('tbl_purchase_invoice_lines as pil')
+        $baseQuery = DB::connection('reports_mysql')->table('tbl_purchase_invoice_lines as pil')
             ->join('tbl_purchase_invoices as pi', 'pil.purchase_invoice_id', '=', 'pi.id')
             ->leftJoin('tbl_partners as partner', 'pi.partner_id', '=', 'partner.id')
             ->leftJoin('tbl_warehouses as warehouse', 'pi.warehouse_id', '=', 'warehouse.id')

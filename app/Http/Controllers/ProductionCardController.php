@@ -15,7 +15,7 @@ class ProductionCardController extends Controller
         $warehouse = trim((string) $request->get('warehouse', ''));
         $q = trim((string) $request->get('q', ''));
 
-        $baseQuery = DB::table('tbl_productions as p')
+        $baseQuery = DB::connection('reports_mysql')->table('tbl_productions as p')
             ->leftJoin('tbl_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('tbl_production_lines as pl', 'pl.production_id', '=', 'p.id')
             ->leftJoin('tbl_items as i', 'pl.item_id', '=', 'i.id')
@@ -70,7 +70,7 @@ class ProductionCardController extends Controller
 
     public function show($id)
     {
-        $rows = DB::table('tbl_production_lines as itemProduct')
+        $rows = DB::connection('reports_mysql')->table('tbl_production_lines as itemProduct')
             ->join('tbl_productions', 'itemProduct.production_id', '=', 'tbl_productions.id')
             ->join('tbl_warehouses', 'tbl_productions.warehouse_id', '=', 'tbl_warehouses.id')
             ->join('tbl_items', 'itemProduct.item_id', '=', 'tbl_items.id')

@@ -20,7 +20,7 @@ class PurchaseSummaryController extends Controller
         $from = Carbon::parse($start)->startOfDay();
         $to = Carbon::parse($end)->endOfDay();
 
-        $baseQuery = DB::table('v_purchase_card')
+        $baseQuery = DB::connection('reports_mysql')->table('v_purchase_card')
             ->whereBetween('date', [$from, $to])
             ->when($category !== '', function ($query) use ($category) {
                 $query->where('category', 'like', '%' . $category . '%');

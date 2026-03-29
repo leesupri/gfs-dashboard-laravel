@@ -27,7 +27,7 @@ class SalesController extends Controller
     /* =========================
      * PAYMENT AGG (1 ROW / INVOICE)
      * ========================= */
-    $payAgg = DB::table('v_payment_index')
+    $payAgg = DB::connection('reports_mysql')->table('v_payment_index')
         ->selectRaw("
             invoice_id,
             SUM(total) AS paid_total,
@@ -64,7 +64,7 @@ class SalesController extends Controller
     /* =========================
      * BASE QUERY = tbl_sales (JRXML truth)
      * ========================= */
-    $base = DB::table('tbl_sales as s')
+    $base = DB::connection('reports_mysql')->table('tbl_sales as s')
         ->leftJoinSub($payAgg, 'p', function ($join) {
             $join->on('p.invoice_id', '=', 's.invoice_id');
         })
@@ -137,7 +137,7 @@ class SalesController extends Controller
     /* =========================
      * KPI (tbl_sales only)
      * ========================= */
-    $kpi = DB::table('tbl_sales')
+    $kpi = DB::connection('reports_mysql')->table('tbl_sales')
         ->whereBetween('date', [
             $start . ' 00:00:00',
             $end   . ' 23:59:59',
@@ -157,7 +157,7 @@ class SalesController extends Controller
     /* =========================
      * PAYMENT BREAKDOWN (FROM AGG)
      * ========================= */
-    $paymentBreakdownRows = DB::table('tbl_sales as s')
+    $paymentBreakdownRows = DB::connection('reports_mysql')->table('tbl_sales as s')
     ->leftJoinSub($payAgg, 'p', function ($j) {
         $j->on('p.invoice_id', '=', 's.invoice_id');
     })
@@ -235,7 +235,7 @@ foreach ($paymentBreakdownRows as $r) {
     public function receipt($invoice_id)
 {
     // 1️⃣ SALE HEADER (ONE ROW)
-    $sale = DB::table('tbl_sales as s')
+    $sale = DB::connection('reports_mysql')->table('tbl_sales as s')
         ->leftJoin('tbl_employees as e', 's.closedBy_id', '=', 'e.id')
         ->leftJoin('tbl_customers as c', 's.customer_id', '=', 'c.id')
         ->where('s.invoice_id', (int)$invoice_id)
@@ -265,7 +265,7 @@ foreach ($paymentBreakdownRows as $r) {
     }
 
     // 2️⃣ ITEMS (DETAIL)
-    $items = DB::table('v_order_index')
+    $items = DB::connection('reports_mysql')->table('v_order_index')
     ->select([
         'id','invoice_id','created','salesType',
         'description','quantity','unitPrice',
@@ -290,7 +290,7 @@ foreach ($paymentBreakdownRows as $r) {
     ->get();
 
     // 3️⃣ PAYMENTS (GROUPED)
-    $payments = DB::table('v_payment_index')
+    $payments = DB::connection('reports_mysql')->table('v_payment_index')
         ->selectRaw("
             CASE
               WHEN paymentType = 'CASH' THEN 'CASH'
@@ -375,7 +375,7 @@ private function buildSalesQuery(Request $request)
     $sort = (string) $request->query('sort', 'datetime_desc');
 
     // ✅ Aggregate payments to 1 row per invoice
-    $payAgg = DB::table('v_payment_index')
+    $payAgg = DB::connection('reports_mysql')->table('v_payment_index')
         ->selectRaw("
             invoice_id,
             SUM(total) AS paid_total,
@@ -410,7 +410,7 @@ private function buildSalesQuery(Request $request)
         ->groupBy('invoice_id');
 
     // ✅ Base = tbl_sales (JRXML truth)
-    $base = DB::table('tbl_sales as s')
+    $base = DB::connection('reports_mysql')->table('tbl_sales as s')
         ->leftJoinSub($payAgg, 'p', function ($join) {
             $join->on('p.invoice_id', '=', 's.invoice_id');
         })

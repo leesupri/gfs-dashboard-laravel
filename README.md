@@ -60,6 +60,22 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 DB_USERNAME=gfs_read
 DB_PASSWORD=gfs080621
 
+Database 1: existing read-only source
+database: db_gundaling
+user: gfs_read
+DB_PASSWORD=gfs080621 or StrongPasswordHere
+
+purpose: reports only
+Database 2: new Laravel writable database
+database: db_gfs_dashboard
+user: something like gfs_app
+DB_PASSWORD=gfs080621
+purpose: auth/settings/app data
+
+login page 
+admin 
+admin123
+
 
 npm run dev
 php artisan serve

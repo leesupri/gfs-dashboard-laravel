@@ -18,7 +18,7 @@ public function activityLog(Request $request)
     $from = Carbon::parse($start)->startOfDay();
     $to   = Carbon::parse($end)->endOfDay();
 
-    $rows = DB::table('tbl_activity_logs as al')
+    $rows = DB::connection('reports_mysql')->table('tbl_activity_logs as al')
         ->join('tbl_employees as e', 'al.employee_id', '=', 'e.id')
         ->leftJoin('tbl_sales as s', 'al.salesId', '=', 's.id')
         ->select([
@@ -47,7 +47,7 @@ public function activityLog(Request $request)
         ->paginate(100)
         ->withQueryString();
 
-    $summary = DB::table('tbl_activity_logs as al')
+    $summary = DB::connection('reports_mysql')->table('tbl_activity_logs as al')
         ->join('tbl_employees as e', 'al.employee_id', '=', 'e.id')
         ->leftJoin('tbl_sales as s', 'al.salesId', '=', 's.id')
         ->whereBetween('al.date', [$from, $to])
