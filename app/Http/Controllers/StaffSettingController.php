@@ -9,15 +9,47 @@ use Illuminate\Validation\Rule;
 
 class StaffSettingController extends Controller
 {
-    public function index()
-    {
-        $staffUsers = StaffUser::orderBy('name')->get();
+    public function index(Request $request)
+{
+    $search = trim((string) $request->get('search', ''));
+    $status = trim((string) $request->get('status', 'all'));
 
-        return view('settings.staff', [
-            'title' => 'Staff Settings',
-            'staffUsers' => $staffUsers,
-        ]);
+    $staffUsers = \App\Models\StaffUser::query()
+        ->when($search !== '', function ($query) use ($search) {
+            $query->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('username', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%');
+            });
+        })
+        ->when($status === 'active', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->when($status === 'inactive', function ($query) {
+            $query->where('is_active', false);
+        })
+        ->orderBy('name')
+        ->get();
+
+    $selectedStaff = null;
+
+    if ($request->filled('staff')) {
+        $selectedStaff = $staffUsers->firstWhere('id', (int) $request->get('staff'));
+
+        if (!$selectedStaff) {
+            $selectedStaff = \App\Models\StaffUser::find((int) $request->get('staff'));
+        }
     }
+
+    return view('settings.staff', [
+        'title' => 'Staff Settings',
+        'staffUsers' => $staffUsers,
+        'selectedStaff' => $selectedStaff,
+        'isCreateMode' => $request->boolean('new') || !$selectedStaff,
+        'search' => $search,
+        'status' => $status,
+    ]);
+}
 
     public function store(Request $request)
     {

@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 class SecuritySettingController extends Controller
 {
     private array $availableRoutes = [
+        'welcome' => 'Welcome Page',
         'dashboard' => 'Dashboard',
         'sales.index' => 'Sales',
+        'sales.receipt' => 'Sales receipt',
         'itemSales.index' => 'Item Sales',
         'noSales.index' => 'No Sales',
         'summarySales.index' => 'Summary Sales',
@@ -23,23 +25,58 @@ class SecuritySettingController extends Controller
         'reports.marketList' => 'Market List',
         'reports.productionSummary' => 'Production Summary',
         'reports.productionCard.index' => 'Production Card',
+        'reports.productionCard.show' => 'Production Card Show',
         'reports.purchaseSummary' => 'Purchase Summary',
         'reports.purchaseDetail' => 'Purchase Detail',
         'reports.purchaseDetailPartner' => 'Purchase Detail by Partner',
+        'reports.physicalStockCountSummary' => 'Physical Stock Count Summary',
+        'reports.transferDetail' => 'Transfer Detail',
+        'reports.wasteSummary' => 'Waste Summary Report',
         'settings.staff' => 'Staff Settings',
         'settings.security' => 'Security Settings',
     ];
 
-    public function index()
-    {
-        $staffUsers = StaffUser::with('permissions')->orderBy('name')->get();
+    public function index(Request $request)
+{
+    $search = trim((string) $request->get('search', ''));
+    $status = trim((string) $request->get('status', 'all'));
 
-        return view('settings.security', [
-            'title' => 'Security Settings',
-            'staffUsers' => $staffUsers,
-            'availableRoutes' => $this->availableRoutes,
-        ]);
+    $staffUsers = \App\Models\StaffUser::with('permissions')
+        ->when($search !== '', function ($query) use ($search) {
+            $query->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('username', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%');
+            });
+        })
+        ->when($status === 'active', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->when($status === 'inactive', function ($query) {
+            $query->where('is_active', false);
+        })
+        ->orderBy('name')
+        ->get();
+
+    $selectedStaff = null;
+
+    if ($request->filled('staff')) {
+        $selectedStaff = $staffUsers->firstWhere('id', (int) $request->get('staff'));
+
+        if (!$selectedStaff) {
+            $selectedStaff = \App\Models\StaffUser::with('permissions')->find((int) $request->get('staff'));
+        }
     }
+
+    return view('settings.security', [
+        'title' => 'Security Settings',
+        'staffUsers' => $staffUsers,
+        'selectedStaff' => $selectedStaff,
+        'availableRoutes' => $this->availableRoutes,
+        'search' => $search,
+        'status' => $status,
+    ]);
+}
 
     public function update(Request $request, StaffUser $staffUser)
     {

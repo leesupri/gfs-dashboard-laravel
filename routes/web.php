@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ItemSalesController;
@@ -18,6 +19,9 @@ use App\Http\Controllers\ProductionCardController;
 use App\Http\Controllers\PurchaseSummaryController;
 use App\Http\Controllers\PurchaseDetailController;
 use App\Http\Controllers\PurchaseDetailPartnerController;
+use App\Http\Controllers\PhysicalStockCountSummaryController;
+use App\Http\Controllers\TransferDetailController;
+use App\Http\Controllers\WasteSummaryController;
 
 
 use App\Http\Controllers\AuthController;
@@ -45,7 +49,7 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
 //         'active' => 'dashboard',
 //     ]);
 // })->name('dashboard');
-Route::redirect('/', '/dashboard');
+Route::redirect('/', '/welcome');
 Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/item-sales', [ItemSalesController::class, 'index'])->name('itemSales.index');
@@ -69,9 +73,14 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/reports/purchase-summary', [PurchaseSummaryController::class, 'index'])->name('reports.purchaseSummary');
     Route::get('/reports/purchase-detail', [PurchaseDetailController::class, 'index'])->name('reports.purchaseDetail');
     Route::get('/reports/purchase-detail-partner', [PurchaseDetailPartnerController::class, 'index'])->name('reports.purchaseDetailPartner');
+    Route::get('/reports/physical-stock-count-summary', [PhysicalStockCountSummaryController::class, 'index'])->name('reports.physicalStockCountSummary');
+    Route::get('/reports/transfer-detail', [TransferDetailController::class, 'index'])->name('reports.transferDetail');
+    Route::get('/reports/waste-summary', [WasteSummaryController::class, 'index'])->name('reports.wasteSummary');
     Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
     Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
+    
     Route::get('/sales/{invoiceId}', [SalesController::class, 'show'])->name('sales.show'); // optional detail page
+    
     Route::get('/sales/{invoice_id}/receipt', [SalesController::class, 'receipt'])
         ->whereNumber('invoice_id')
         ->name('sales.receipt');
@@ -81,6 +90,7 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
 });
 
 Route::middleware(['staff.auth'])->group(function () {
+    Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
     Route::get('/settings/change-password', [AuthController::class, 'showChangePassword'])->name('settings.changePassword');
     Route::post('/settings/change-password', [AuthController::class, 'changePassword'])->name('settings.changePassword.update');
 });

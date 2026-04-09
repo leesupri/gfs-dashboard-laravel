@@ -16,15 +16,15 @@
 
         {{-- Description --}}
         <p class="mt-2 text-sm text-gray-500 max-w-md mx-auto">
-            You don’t have permission to access this page.  
+            You don’t have permission to access this page.
             Please contact your administrator if needed.
         </p>
 
         {{-- Actions --}}
         <div class="mt-6 flex justify-center gap-3">
-            <a href="{{ route('dashboard') }}"
+            <a href="{{ route('welcome') }}"
                class="rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition">
-                Back to Dashboard
+                Back to Home
             </a>
 
             <button onclick="history.back()"

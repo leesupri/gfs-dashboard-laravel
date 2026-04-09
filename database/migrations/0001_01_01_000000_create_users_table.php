@@ -11,13 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff_audit_logs', function (Blueprint $table) {
+        Schema::create('staff_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('actor_staff_user_id')->nullable()->constrained('staff_users')->nullOnDelete();
-            $table->foreignId('target_staff_user_id')->nullable()->constrained('staff_users')->nullOnDelete();
-            $table->string('action');
-            $table->text('description')->nullable();
+            $table->string('name');
+            $table->string('username')->unique();
+            $table->string('password');
+            $table->string('title')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+        });
+
+        Schema::create('security_permissions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('staff_user_id')->constrained('staff_users')->cascadeOnDelete();
+            $table->string('route_name');
+            $table->boolean('can_view')->default(true);
+            $table->timestamps();
+
+            $table->unique(['staff_user_id', 'route_name']);
         });
 
         
@@ -29,6 +40,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff_audit_log');
+        Schema::dropIfExists('staff_users');
+        Schema::dropIfExists('security_permissions');
     }  
 };

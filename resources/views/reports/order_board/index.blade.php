@@ -109,7 +109,7 @@ function deptBadge($dept) {
                             </div>
 
                             <div class="grid grid-cols-1 gap-1 text-sm text-gray-600 sm:grid-cols-2 xl:grid-cols-3">
-                                <div><span class="font-medium text-gray-800">Order date:</span> {{ $bill->date ? \Carbon\Carbon::parse($bill->date)->format('d/m/Y H:i:s') : '-' }}</div>
+                                <div><span class="font-medium text-gray-800">Opening day:</span> {{ $bill->date ? \Carbon\Carbon::parse($bill->date)->format('d/m/Y H:i:s') : '-' }}</div>
                                 <div><span class="font-medium text-gray-800">Ordered by:</span> {{ $bill->ordered_by ?: '-' }}</div>
                                 <div><span class="font-medium text-gray-800">Ordered at:</span> {{ $bill->ordered_at ? \Carbon\Carbon::parse($bill->ordered_at)->format('d/m/Y H:i:s') : '-' }}</div>
                                 <div><span class="font-medium text-gray-800">Order station:</span> {{ $bill->order_station ?: '-' }}</div>

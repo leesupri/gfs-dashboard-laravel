@@ -91,7 +91,7 @@ class SalesConsumptionDetailInvoiceController extends Controller
     $dateIndexFrom = (int) Carbon::parse($start)->format('Ym');
     $dateIndexTo   = (int) Carbon::parse($end)->format('Ym');
 
-    $rows = DB::table('tbl_sales_consumptions as sc')
+    $rows = DB::connection('reports_mysql')->DB::table('tbl_sales_consumptions as sc')
         ->join('tbl_sales_consumption_lines as scl', 'scl.sales_consumption_id', '=', 'sc.id')
         ->join('tbl_items as item', 'scl.item_id', '=', 'item.id')
         ->join('tbl_warehouses as warehouse', 'scl.warehouse_id', '=', 'warehouse.id')
@@ -142,4 +142,5 @@ class SalesConsumptionDetailInvoiceController extends Controller
         fclose($out);
     }, $file);
 }
+
 }

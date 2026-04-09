@@ -11,7 +11,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (session()->has('staff_user_id')) {
-            return redirect()->route('dashboard');
+            return redirect()->route('welcome');
         }
 
         return view('auth.login');
@@ -38,7 +38,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route('welcome');
     }
 
     public function showChangePassword()

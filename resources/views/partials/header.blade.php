@@ -1,6 +1,7 @@
 <!-- resources\views\partials\header.blade.php -->
 @php
   $routeTitleMap = [
+    'welcome' => 'Home',
     'dashboard' => 'Dashboard',
     'sales.index' => 'Sales',
     'itemSales.index' => 'Item Sales',
@@ -18,6 +19,9 @@
     'reports.purchaseSummary'=>'Purchase Summary List',
     'reports.purchaseDetail'=>'Purchase detail card',
     'reports.purchaseDetailPartner' => 'Purchase Detail by Partner',
+    'reports.physicalStockCountSummary' => 'Physical Stock Count Summary',
+    'reports.transferDetail' => 'Transfer Detail Report',
+    'reports.wasteSummary' => 'Waste Summary Report',
 'settings.staff' => 'Staff Settings',
 'settings.security' => 'Security Settings',
 
@@ -26,12 +30,19 @@
   $routeName = request()->route()?->getName();
 @endphp
 <header class="border-b border-gray-200 bg-white">
-  <div class="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+  
+    <div
+  class="flex items-center gap-3 justify-between px-4 py-3 sm:px-6 lg:px-8 opacity-0 -translate-y-3 transition-all duration-500"
+  x-init="$nextTick(() => {
+    $el.classList.remove('opacity-0','-translate-y-3')
+  })"
+>
     <div class="flex items-center gap-3">
       <button
         type="button"
+        @click="mobileMenuOpen = true"
         class="md:hidden inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-        ☰
+        <span class="transition-transform duration-200" :class="mobileMenuOpen ? 'rotate-90' : 'rotate-0'">☰</span>
       </button>
 
       <div>
