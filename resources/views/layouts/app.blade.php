@@ -9,7 +9,7 @@
 </head>
 
 <body
-  x-data="{ mobileMenuOpen: false, loading: false }"
+  x-data="{ mobileMenuOpen: false, loading: false, collapsed: false }"
   x-init="window.addEventListener('pageshow', () => loading = false)"
   class="bg-gray-50 text-gray-900"
 >
