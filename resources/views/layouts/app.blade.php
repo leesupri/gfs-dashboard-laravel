@@ -34,7 +34,7 @@
 
       <!-- Logo -->
       <img
-        src="{{ asset('images/brand/cowRunning.gif') }}"
+        src="{{ asset('images/brand/cowRunning1.gif') }}"
         alt="Cow running"
         class="relative h-48 w-auto opacity-0 scale-95 transition-all duration-500"
         x-data="{ loaded: false }"
