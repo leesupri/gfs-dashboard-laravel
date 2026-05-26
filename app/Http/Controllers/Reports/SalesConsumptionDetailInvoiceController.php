@@ -91,7 +91,7 @@ class SalesConsumptionDetailInvoiceController extends Controller
     $dateIndexFrom = (int) Carbon::parse($start)->format('Ym');
     $dateIndexTo   = (int) Carbon::parse($end)->format('Ym');
 
-    $rows = DB::connection('reports_mysql')->DB::table('tbl_sales_consumptions as sc')
+    $rows = DB::connection('reports_mysql')->table('tbl_sales_consumptions as sc')
         ->join('tbl_sales_consumption_lines as scl', 'scl.sales_consumption_id', '=', 'sc.id')
         ->join('tbl_items as item', 'scl.item_id', '=', 'item.id')
         ->join('tbl_warehouses as warehouse', 'scl.warehouse_id', '=', 'warehouse.id')
@@ -129,7 +129,7 @@ class SalesConsumptionDetailInvoiceController extends Controller
         foreach ($rows as $r) {
             fputcsv($out, [
                 $r->invoice_id,
-                optional($r->date)->format('Y-m-d'),
+                $r->date ? \Carbon\Carbon::parse($r->date)->format('Y-m-d') : '',
                 $r->resultDescription,
                 $r->item,
                 $r->quantity,

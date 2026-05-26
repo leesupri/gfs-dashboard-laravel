@@ -158,7 +158,7 @@ class PurchaseDetailController extends Controller
                     number_format((float) $row->quantity, 2, ',', '.'),
                     $row->uom,
                     number_format((float) $row->unitCost, 2, ',', '.'),
-                    number_format((float) $row->totalnumber_format),
+                    number_format((float) $row->total, 2, ',', '.'),
                     $row->Partner,
                     $row->Warehouse,
                     $row->CreateBy,

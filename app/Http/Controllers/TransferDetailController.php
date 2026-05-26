@@ -31,7 +31,6 @@ class TransferDetailController extends Controller
             ->join('tbl_items as i', 'tl.item_id', '=', 'i.id')
             ->join('tbl_categories as c', 'i.category_id', '=', 'c.id')
             ->join('tbl_warehouses as toWarehouse', 'toWarehouse.id', '=', 't.to_id')
-            ->leftJoin('tbl_employees as e', 't.createdBy_id', '=', 'e.id')
             ->whereBetween('t.date', [$from, $to])
             ->when($fromWarehouse !== '', function ($query) use ($fromWarehouse) {
                 $query->where('fromWarehouse.name', 'like', '%' . $fromWarehouse . '%');
@@ -72,7 +71,7 @@ class TransferDetailController extends Controller
                 'fromWarehouse.name as from_warehouse',
                 'toWarehouse.name as to_warehouse',
                 'tl.description',
-                'e.name as created_by',
+                't.savedBy as created_by',
             ]);
 
         if ($export === 'csv') {
