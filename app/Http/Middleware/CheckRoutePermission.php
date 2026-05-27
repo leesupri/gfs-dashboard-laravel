@@ -33,6 +33,7 @@ class CheckRoutePermission
     'reports.consumptionDetailInvoice.export' => 'reports.consumptionDetailInvoice',
     'reports.consumptionWarehouse.export' => 'reports.consumptionWarehouse',
     'reports.recipe.export' => 'reports.recipe',
+    'reports.recipe-board.export'             => 'reports.recipe-board',
     ];
 
     $routeNameToCheck = $permissionMap[$routeName] ?? $routeName;

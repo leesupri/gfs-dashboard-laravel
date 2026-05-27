@@ -9,6 +9,7 @@
     'reports.void' => 'Void Report',
     'reports.consumptionWarehouse' => 'Reports consumption by warehouse',
     'reports.recipe'=> 'Master Recipe Report',
+    'reports.recipe-board' => 'Recipes Board',
     'reports.orderBoard'=>'Order Board All',
     'reports.activityLog'=>'Activity Log',
     'reports.marketList'=>'Market List',
@@ -29,7 +30,7 @@
   $routeName = request()->route()?->getName();
 @endphp
 
-<header class="border-b border-gray-200 bg-white">
+<div>
   <div
     class="flex items-center justify-between gap-3 px-4 py-3 opacity-0 -translate-y-3 transition-all duration-500 sm:px-6 lg:px-8"
     x-init="$nextTick(() => { $el.classList.remove('opacity-0','-translate-y-3') })"
@@ -38,7 +39,7 @@
       <button
   type="button"
   @click="window.innerWidth < 768 ? mobileMenuOpen = true : collapsed = !collapsed"
-  class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+  class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 cursor-pointer"
 >
   <span class="transition-transform duration-200"
         :class="collapsed ? 'rotate-90' : 'rotate-0'">
@@ -65,4 +66,4 @@
       </div>
     </div>
   </div>
-</header>
+</div>

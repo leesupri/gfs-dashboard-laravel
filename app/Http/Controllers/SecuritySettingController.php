@@ -20,6 +20,7 @@ class SecuritySettingController extends Controller
         'reports.consumptionDetailInvoice' => 'Consumption DI',
         'reports.consumptionWarehouse' => 'Consumption WH',
         'reports.recipe' => 'Recipes Report',
+        'reports.recipe-board' => 'Recipes Board',
         'reports.orderBoard' => 'Order Board',
         'reports.activityLog' => 'Activity Logs',
         'reports.marketList' => 'Market List',

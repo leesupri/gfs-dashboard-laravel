@@ -11,6 +11,7 @@
     ['label' => 'Consumption DI', 'href' => route('reports.consumptionDetailInvoice'), 'key' => 'reports.consumptionDetailInvoice', 'icon' => 'file'],
     ['label' => 'Consumption WH', 'href' => route('reports.consumptionWarehouse'), 'key' => 'reports.consumptionWarehouse', 'icon' => 'database'],
     ['label' => 'Recipes Report', 'href' => route('reports.recipe'), 'key' => 'reports.recipe', 'icon' => 'book'],
+    ['label' => 'Recipes Board', 'href' => route('reports.recipe-board'), 'key' => 'reports.recipe-board', 'icon' => 'book'],
     ['label' => 'Activity Logs', 'href' => route('reports.activityLog'), 'key' => 'reports.activityLog', 'icon' => 'activity'],
     ['label' => 'Market List', 'href' => route('reports.marketList'), 'key' => 'reports.marketList', 'icon' => 'list'],
     ['label' => 'Production Summary', 'href' => route('reports.productionSummary'), 'key' => 'reports.productionSummary', 'icon' => 'layers'],
@@ -50,10 +51,10 @@
   x-transition:leave="transform transition ease-in duration-200"
   x-transition:leave-start="translate-x-0 opacity-100 scale-100"
   x-transition:leave-end="-translate-x-full opacity-0 scale-[0.98]"
-  class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-gray-200 bg-white md:hidden"
+  class="sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col md:hidden"
 >
   <div x-data="{ collapsed: false }" class="flex h-full flex-col">
-    <div class="flex h-14 items-center justify-between gap-2 border-b border-gray-200 px-4">
+    <div class="flex h-14 items-center justify-between gap-2 border-b px-4" style="border-color:var(--sidebar-border)">
       <a href="{{ route('welcome') }}" class="flex items-center gap-2" @click="mobileMenuOpen = false">
         <img
           src="{{ asset('images/brand/Logo_GUNDALING_full-color_tall_on-white.png') }}"
@@ -66,15 +67,15 @@
       <button
         type="button"
         @click="mobileMenuOpen = false"
-        class="rounded-lg border border-gray-200 px-2 py-1 text-sm text-gray-700 hover:bg-gray-50"
+        class="rounded-lg border border-white/20 px-2 py-1 text-sm text-white/70 hover:bg-white/10"
       >
         ✕
       </button>
     </div>
 
-    <div class="border-b border-gray-200 px-4 py-2 leading-tight">
-      <div class="text-sm font-semibold">GFS Dashboard</div>
-      <div class="text-xs text-gray-500">{{ $currentStaffUser->title ?? 'User' }}</div>
+    <div class="border-b px-4 py-2 leading-tight" style="border-color:var(--sidebar-border)">
+      <div class="text-sm font-semibold text-white">GFS Dashboard</div>
+      <div class="text-xs" style="color:var(--sidebar-text)">{{ $currentStaffUser->title ?? 'User' }}</div>
     </div>
 
     <nav class="flex-1 space-y-1 overflow-y-auto p-3">
@@ -88,12 +89,12 @@
       @endforeach
     </nav>
 
-    <div class="border-t border-gray-200 p-3 space-y-2">
+    <div class="border-t p-3 space-y-2" style="border-color:var(--sidebar-border)">
       <div x-data="{ open: {{ $settingsOpen ? 'true' : 'false' }} }" class="space-y-2">
         <button
           type="button"
           @click="open = !open"
-          class="relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
+          class="relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-white/8" style="color:var(--sidebar-text)"
         >
           <x-nav-icon name="settings" class="h-5 w-5 text-gray-400" />
           <span>Settings</span>
@@ -149,7 +150,7 @@
         <form method="POST" action="{{ route('logout') }}">
           @csrf
           <button type="submit"
-                  class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition-all duration-150 hover:translate-x-1 hover:bg-red-50">
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-400 transition-all duration-150 hover:translate-x-1 hover:bg-red-500/15">
             <x-nav-icon name="logout" class="h-4 w-4 text-red-500" />
             <span>Logout</span>
           </button>
@@ -162,9 +163,9 @@
 {{-- Desktop sidebar --}}
 <aside
   :class="collapsed ? 'w-20' : 'w-64'"
-  class="relative z-40 hidden md:flex md:flex-col border-r bg-white overflow-visible transition-all duration-300 ease-in-out"
+  class="sidebar relative z-40 hidden md:flex md:flex-col overflow-visible"
 >
-  <div class="flex h-14 items-center gap-2 border-b border-gray-200 px-4">
+  <div class="flex h-14 items-center gap-2 border-b px-4" style="border-color:var(--sidebar-border)">
     <a href="{{ route('welcome') }}" class="flex items-center gap-2">
       <img
         src="{{ asset('images/brand/Logo_GUNDALING_full-color_tall_on-white.png') }}"
@@ -180,9 +181,9 @@
       />
     </a>
 
-    <div class="leading-tight" x-show="!collapsed" x-transition>
-      <div class="text-sm font-semibold">GFS Dashboard</div>
-      <div class="text-xs text-gray-500">{{ $currentStaffUser->title ?? 'User' }}</div>
+    <div class="leading-tight text-white" x-show="!collapsed" x-transition>
+      <div class="text-sm font-semibold text-white">GFS Dashboard</div>
+      <div class="text-xs" style="color:var(--sidebar-text)">{{ $currentStaffUser->title ?? 'User' }}</div>
     </div>
   </div>
 
@@ -199,13 +200,13 @@
   
 </nav>
 
-  <div class="border-t border-gray-200 p-3 space-y-2">
+  <div class="border-t p-3 space-y-2" style="border-color:var(--sidebar-border)">
     <div x-data="{ open: {{ $settingsOpen ? 'true' : 'false' }} }" class="space-y-2">
       <button
         type="button"
         @click="open = !open"
         :class="collapsed ? 'justify-center' : 'gap-3'"
-        class="relative flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
+        class="relative flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-white/8" style="color:var(--sidebar-text)"
       >
         <x-nav-icon name="settings" class="h-5 w-5 text-gray-400" />
         <span x-show="!collapsed" x-transition>Settings</span>
@@ -214,7 +215,7 @@
           x-show="!collapsed"
           class="ml-auto h-4 w-4 transition-transform duration-200"
           :class="open ? 'rotate-180' : ''"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:var(--sidebar-text)"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
         </svg>

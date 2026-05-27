@@ -12,6 +12,7 @@ use App\Http\Controllers\MarketListController;
 use App\Http\Controllers\Reports\SalesConsumptionWarehouseController;
 use App\Http\Controllers\Reports\SalesConsumptionDetailInvoiceController;
 use App\Http\Controllers\Reports\RecipeReportController;
+use App\Http\Controllers\Reports\RecipeBoardController;
 use App\Http\Controllers\Reports\OrderBoardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductionSummaryController;
@@ -65,6 +66,8 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/reports/consumption-detail-invoice/export', [SalesConsumptionDetailInvoiceController::class, 'export'])->name('reports.consumptionDetailInvoice.export');
     Route::get('/reports/recipe', [RecipeReportController::class, 'index'])->name('reports.recipe');
     Route::get('/reports/recipe/export', [RecipeReportController::class, 'export'])->name('reports.recipe.export');
+    Route::get('/reports/recipe-board',        [RecipeBoardController::class, 'index'])->name('reports.recipe-board');
+    Route::get('/reports/recipe-board/export', [RecipeBoardController::class, 'export'])->name('reports.recipe-board.export');
     Route::get('/reports/activity-log', [ReportController::class, 'activityLog'])->name('reports.activityLog');
     Route::get('/reports/market-list', [MarketListController::class, 'marketList'])->name('reports.marketList');
     Route::get('/reports/order-board', [OrderBoardController::class, 'index'])->name('reports.orderBoard');
