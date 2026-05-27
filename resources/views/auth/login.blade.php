@@ -104,8 +104,8 @@
                 <img
                     src="{{ asset('images/brand/Logo_GUNDALING_full-color_tall_on-white.png') }}"
                     alt="Gundaling Farmstead"
-                    class="mx-auto h-14 w-auto mb-5 drop-shadow-lg"
-                    style="filter: brightness(0) invert(1);"
+                    class="mx-auto h-25 w-auto mb-5 drop-shadow-lg"
+                    
                 >
                 <h1 class="text-lg font-semibold text-white leading-tight">
                     GFS Dashboard

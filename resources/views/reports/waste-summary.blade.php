@@ -1,24 +1,51 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6">
+<div x-data="{ filtersOpen: {{ (request('start') || request('end')) ? 'true' : 'false' }} }" class="space-y-6">
 
     <!-- Header -->
-    <div class="flex justify-between items-end">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-lg font-semibold">{{ $title }}</h1>
 
-        <form method="GET" class="flex gap-2 items-end">
-            <input type="date" name="start" value="{{ $start }}" class="border px-3 py-2 rounded">
-            <input type="date" name="end" value="{{ $end }}" class="border px-3 py-2 rounded">
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.wasteSummary', array_merge(request()->query(), ['export'=>'csv'])) }}"
+               class="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm font-medium transition hover:bg-gray-50"
+               style="border-color:var(--card-border); color:var(--text-secondary)">
+                Export
+            </a>
+            <button type="button" @click="filtersOpen = !filtersOpen"
+                class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white transition active:scale-95"
+                :class="filtersOpen ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                </svg>
+                <span x-text="filtersOpen ? 'Hide Filters' : 'Filters'"></span>
+            </button>
+        </div>
+    </div>
+
+    <div
+        x-show="filtersOpen" x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2"
+    >
+        <form method="GET" class="flex gap-2 items-end border rounded-xl p-4 bg-white">
+            <div>
+                <label for="f-start" class="text-xs text-gray-500 block">Start</label>
+                <input id="f-start" type="date" name="start" value="{{ $start }}" class="border px-3 py-2 rounded">
+            </div>
+            <div>
+                <label for="f-end" class="text-xs text-gray-500 block">End</label>
+                <input id="f-end" type="date" name="end" value="{{ $end }}" class="border px-3 py-2 rounded">
+            </div>
 
             <button class="bg-black text-white px-4 py-2 rounded">
                 Apply
             </button>
-
-            <a href="{{ route('reports.wasteSummary', array_merge(request()->query(), ['export'=>'csv'])) }}"
-               class="bg-green-600 text-white px-4 py-2 rounded">
-                Export
-            </a>
         </form>
     </div>
 

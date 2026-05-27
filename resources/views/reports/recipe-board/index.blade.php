@@ -1,172 +1,207 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-5">
+<div x-data="{ filtersOpen: {{ request()->except('page') ? 'true' : 'false' }} }" class="space-y-5">
 
   {{-- ── Page header ── --}}
   <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h1 class="text-lg font-semibold">Recipe Board</h1>
-      <p class="text-xs text-gray-500 mt-0.5">All recipes with ingredients and unit-of-measure breakdown</p>
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-green-600 shadow-sm">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+        </div>
+        <h1 class="text-lg font-semibold" style="color:var(--text-primary)">Recipe Board</h1>
+      </div>
+      <p class="mt-1 ml-10.5 text-xs" style="color:var(--text-muted)">All recipes with ingredients and unit-of-measure breakdown</p>
     </div>
 
-    <a
-      href="{{ route('reports.recipe-board.export', request()->query()) }}"
-      class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
-      </svg>
-      Export CSV
-    </a>
+    <div class="flex items-center gap-2">
+      <a
+        href="{{ route('reports.recipe-board.export', request()->query()) }}"
+        class="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-medium transition hover:bg-gray-50 active:scale-95"
+        style="border-color:var(--card-border); color:var(--text-secondary); box-shadow:var(--card-shadow)"
+      >
+        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Export CSV
+      </a>
+      <button type="button" @click="filtersOpen = !filtersOpen"
+        class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white transition active:scale-95"
+        :class="filtersOpen ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        <span x-text="filtersOpen ? 'Hide Filters' : 'Filters'"></span>
+      </button>
+    </div>
   </div>
 
   {{-- ── Filters ── --}}
-  <form method="GET" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div
+    x-show="filtersOpen" x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 -translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 -translate-y-2"
+  >
+  <form method="GET" class="rounded-2xl border bg-white p-5 shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 
       <div class="col-span-2 sm:col-span-3 lg:col-span-2">
-        <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
-        <input
-          type="text"
-          name="q"
-          value="{{ $q }}"
-          placeholder="Recipe name, ingredient, category…"
-          class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-        >
+        <label for="filter-q" class="block text-xs font-medium mb-1.5" style="color:var(--text-muted)">Search</label>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style="color:var(--text-muted)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/>
+          </svg>
+          <input
+            id="filter-q"
+            type="text"
+            name="q"
+            value="{{ $q }}"
+            placeholder="Recipe name, ingredient, category…"
+            class="w-full rounded-xl border bg-white pl-9 pr-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+            style="border-color:var(--card-border); color:var(--text-primary)"
+          >
+        </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Category</label>
-        <select name="category" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All categories</option>
-          @foreach ($categories as $cat)
-            <option value="{{ $cat->id }}" {{ $categoryFilter == $cat->id ? 'selected' : '' }}>
-              {{ $cat->name }}{{ $cat->code ? ' ('.$cat->code.')' : '' }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Active</label>
-        <select name="active" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $activeFilter === 'yes' ? 'selected' : '' }}>Active</option>
-          <option value="no"  {{ $activeFilter === 'no'  ? 'selected' : '' }}>Inactive</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Sales</label>
-        <select name="sales" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $sales === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no"  {{ $sales === 'no'  ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Purchased</label>
-        <select name="purchased" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $purchased === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no"  {{ $purchased === 'no'  ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Stocked</label>
-        <select name="stocked" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $stocked === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no"  {{ $stocked === 'no'  ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
+      @foreach ([
+        ['label' => 'Category',  'name' => 'category',  'type' => 'category'],
+        ['label' => 'Active',    'name' => 'active',    'type' => 'yesno'],
+        ['label' => 'Sales',     'name' => 'sales',     'type' => 'yesno'],
+        ['label' => 'Purchased', 'name' => 'purchased', 'type' => 'yesno'],
+        ['label' => 'Stocked',   'name' => 'stocked',   'type' => 'yesno'],
+      ] as $filter)
+        <div>
+          <label for="filter-{{ $filter['name'] }}" class="block text-xs font-medium mb-1.5" style="color:var(--text-muted)">{{ $filter['label'] }}</label>
+          <select id="filter-{{ $filter['name'] }}" name="{{ $filter['name'] }}" class="w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20" style="border-color:var(--card-border); color:var(--text-primary)">
+            @if ($filter['type'] === 'category')
+              <option value="">All categories</option>
+              @foreach ($categories as $cat)
+                <option value="{{ $cat->id }}" {{ $categoryFilter == $cat->id ? 'selected' : '' }}>
+                  {{ $cat->name }}{{ $cat->code ? ' ('.$cat->code.')' : '' }}
+                </option>
+              @endforeach
+            @else
+              <option value="">All</option>
+              @php
+                $val = match($filter['name']) {
+                  'active'    => $activeFilter,
+                  'sales'     => $sales,
+                  'purchased' => $purchased,
+                  'stocked'   => $stocked,
+                  default     => ''
+                };
+              @endphp
+              <option value="yes" {{ $val === 'yes' ? 'selected' : '' }}>Yes</option>
+              <option value="no"  {{ $val === 'no'  ? 'selected' : '' }}>No</option>
+            @endif
+          </select>
+        </div>
+      @endforeach
 
     </div>
 
-    <div class="mt-3 flex flex-wrap items-center gap-3">
-
-      {{-- Has conversi toggle ── --}}
-      <label class="inline-flex items-center gap-2 cursor-pointer select-none text-sm text-gray-600">
+    <div class="mt-4 flex flex-wrap items-center gap-3 border-t pt-4" style="border-color:var(--card-border)">
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none text-sm" style="color:var(--text-secondary)">
         <input
           type="checkbox"
           name="has_conversi"
           value="1"
           {{ $hasConversi ? 'checked' : '' }}
-          class="rounded border-gray-300 text-gray-900 focus:ring-gray-400"
+          class="rounded border-gray-300 text-green-600 focus:ring-green-500"
         >
         <span>Has conversi ingredient</span>
         <span class="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200">conversi</span>
       </label>
 
       <div class="flex gap-2 ml-auto">
-        <button
-          type="submit"
-          class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition"
-        >
-          Apply
-        </button>
         <a
           href="{{ route('reports.recipe-board') }}"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+          class="rounded-xl border px-4 py-2 text-sm font-medium transition hover:bg-gray-50"
+          style="border-color:var(--card-border); color:var(--text-secondary)"
         >
           Clear
         </a>
+        <button
+          type="submit"
+          class="rounded-xl bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 active:scale-95 shadow-sm"
+        >
+          Apply filters
+        </button>
       </div>
     </div>
   </form>
+  </div>
 
-  {{-- ── Summary counts ── --}}
-  <div class="flex flex-wrap gap-3 text-sm">
-    <div class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
-      <span class="text-gray-400 text-xs">Showing</span>
-      <span class="ml-2 font-semibold">{{ $byRecipe->count() }}</span>
-      <span class="text-gray-400 text-xs">of {{ $total }} recipes</span>
+  {{-- ── Summary stat pills ── --}}
+  <div class="flex flex-wrap gap-2.5">
+    @php
+      $activeCount   = $byRecipe->filter(fn($items) => $items->first()->isActive === 'yes')->count();
+      $inactiveCount = $byRecipe->filter(fn($items) => $items->first()->isActive === 'no')->count();
+    @endphp
+
+    <div class="flex items-center gap-3 rounded-xl border bg-white px-4 py-2.5 shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
+      <span class="text-xs" style="color:var(--text-muted)">Showing</span>
+      <span class="text-sm font-semibold" style="color:var(--text-primary)">{{ $byRecipe->count() }}</span>
+      <span class="text-xs" style="color:var(--text-muted)">of {{ $total }} recipes</span>
     </div>
-    <div class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
-      <span class="text-gray-400 text-xs">Active</span>
-      <span class="ml-2 font-semibold text-emerald-600">
-        {{ $byRecipe->filter(fn($items) => $items->first()->isActive === 'yes')->count() }}
-      </span>
+
+    <div class="flex items-center gap-2 rounded-xl border bg-white px-4 py-2.5 shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
+      <span class="flex h-2 w-2 rounded-full bg-green-500"></span>
+      <span class="text-xs" style="color:var(--text-muted)">Active</span>
+      <span class="text-sm font-semibold text-green-600">{{ $activeCount }}</span>
     </div>
-    <div class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
-      <span class="text-gray-400 text-xs">Inactive</span>
-      <span class="ml-2 font-semibold text-gray-400">
-        {{ $byRecipe->filter(fn($items) => $items->first()->isActive === 'no')->count() }}
-      </span>
+
+    <div class="flex items-center gap-2 rounded-xl border bg-white px-4 py-2.5 shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
+      <span class="flex h-2 w-2 rounded-full bg-gray-300"></span>
+      <span class="text-xs" style="color:var(--text-muted)">Inactive</span>
+      <span class="text-sm font-semibold" style="color:var(--text-muted)">{{ $inactiveCount }}</span>
     </div>
   </div>
 
-  {{-- ── Cards ── --}}
+  {{-- ── Empty state ── --}}
   @if ($byRecipe->isEmpty())
-    <div class="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
-      <svg class="mx-auto mb-3 w-10 h-10 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <p class="text-sm text-gray-400">No recipes match your filters.</p>
+    <div class="rounded-2xl border bg-white p-14 text-center shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100">
+        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="text-sm font-medium" style="color:var(--text-secondary)">No recipes match your filters.</p>
+      <p class="mt-1 text-xs" style="color:var(--text-muted)">Try adjusting or clearing your filter criteria.</p>
     </div>
+
   @else
 
-    <div
-      x-data="recipeBoard()"
-      class="space-y-3"
-    >
-      {{-- Expand / collapse all ── --}}
-      <div class="flex justify-end gap-2 text-xs">
-        <button
-          @click="expandAll()"
-          class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition"
-        >
-          Expand all
-        </button>
-        <button
-          @click="collapseAll()"
-          class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition"
-        >
-          Collapse all
-        </button>
+    <div x-data="recipeBoard()" class="space-y-3">
+
+      {{-- ── Toolbar ── --}}
+      <div class="flex items-center justify-between">
+        <p class="text-xs" style="color:var(--text-muted)">{{ $byRecipe->count() }} recipe{{ $byRecipe->count() !== 1 ? 's' : '' }} on this page</p>
+        <div class="flex gap-1.5">
+          <button
+            @click="expandAll()"
+            class="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium transition hover:bg-gray-50"
+            style="border-color:var(--card-border); color:var(--text-secondary)"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5-5-5m5 5v-4m0 4h-4"/></svg>
+            Expand all
+          </button>
+          <button
+            @click="collapseAll()"
+            class="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium transition hover:bg-gray-50"
+            style="border-color:var(--card-border); color:var(--text-secondary)"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25"/></svg>
+            Collapse all
+          </button>
+        </div>
       </div>
 
       {{-- ── Recipe cards ── --}}
@@ -180,91 +215,94 @@
           x-data="recipeCard({{ $recipeId }})"
           @board-expand.window="open = true"
           @board-collapse.window="open = false"
-          class="rounded-2xl border bg-white shadow-sm overflow-hidden transition
-            {{ $isInactive ? 'border-gray-200 opacity-60' : 'border-gray-200' }}"
+          class="rounded-2xl border bg-white overflow-hidden transition-all duration-200"
+          style="border-color:var(--card-border); box-shadow:var(--card-shadow); {{ $isInactive ? 'opacity:0.6' : '' }}"
         >
 
-          {{-- Card header ── --}}
+          {{-- ── Card header ── --}}
           <div
             @click="open = !open"
-            class="cursor-pointer px-5 py-4 hover:bg-gray-50 transition select-none
-              {{ $isInactive ? 'bg-gray-50' : '' }}"
+            class="cursor-pointer px-5 py-4 transition-colors duration-150 select-none"
+            :class="open ? 'bg-gray-50/70' : 'hover:bg-gray-50/50'"
           >
             <div class="flex items-start justify-between gap-4">
 
-              {{-- Left: name + badges + meta ── --}}
+              {{-- Left ── --}}
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <svg
-                    :class="open ? 'rotate-90' : ''"
-                    class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 shrink-0"
-                    fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                  </svg>
-                  <span class="font-semibold text-sm text-gray-900">{{ $first->recipeName }}</span>
 
-                  {{-- Active / inactive badge ── --}}
+                {{-- Name row ── --}}
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors" :class="open ? 'bg-green-100' : 'bg-gray-100'">
+                    <svg
+                      :class="open ? 'rotate-90 text-green-600' : 'text-gray-400'"
+                      class="w-3 h-3 transition-transform duration-200"
+                      fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+
+                  <span class="font-semibold text-sm" style="color:var(--text-primary)">{{ $first->recipeName }}</span>
+
                   @if ($first->isActive === 'yes')
-                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">active</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-200">
+                      <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>active
+                    </span>
                   @else
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-300">inactive</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>inactive
+                    </span>
                   @endif
                 </div>
 
-                {{-- Flag badges ── --}}
-                <div class="mt-1.5 ml-5 flex flex-wrap gap-1.5">
+                {{-- Meta row ── --}}
+                <div class="mt-2 ml-7.5 flex flex-wrap items-center gap-1.5">
+
                   @if ($first->sales === 'yes')
-                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">sales</span>
+                    <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-200">sales</span>
                   @else
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no sales</span>
+                    <span class="inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no sales</span>
                   @endif
 
                   @if ($first->purchased === 'yes')
                     <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200">purchased</span>
                   @else
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no purchase</span>
+                    <span class="inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no purchase</span>
                   @endif
 
                   @if ($first->stocked === 'yes')
                     <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200">stocked</span>
                   @else
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no stock</span>
+                    <span class="inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no stock</span>
                   @endif
 
-                  {{-- Conversi indicator on the recipe itself ── --}}
                   @if ($first->stocked === 'yes' && $first->sales === 'no' && $first->purchased === 'no')
                     <span class="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200">conversi</span>
                   @endif
+
+                  @if ($first->categoryName)
+                    <span class="mx-1 h-3 w-px bg-gray-200"></span>
+                    <span class="inline-flex items-center gap-1 text-[11px]" style="color:var(--text-muted)">
+                      <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+                      </svg>
+                      {{ $first->categoryName }}
+                      @if ($first->categoryCode)
+                        <span class="font-mono text-[10px]">({{ $first->categoryCode }})</span>
+                      @endif
+                    </span>
+                  @endif
                 </div>
 
-                {{-- Category ── --}}
-                @if ($first->categoryName)
-                  <div class="mt-1.5 ml-5 flex items-center gap-1">
-                    <svg class="w-3 h-3 shrink-0 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
-                    </svg>
-                    <span class="text-[11px] text-gray-500">{{ $first->categoryName }}</span>
-                    @if ($first->categoryCode)
-                      <span class="font-mono text-[10px] text-gray-400">({{ $first->categoryCode }})</span>
-                    @endif
-                  </div>
-                @endif
-
-                <div class="mt-1 ml-5 text-[11px] text-gray-400">
-                  Production: {{ number_format((float) $first->production, 2) }} {{ $first->uom }}
-                  &nbsp;·&nbsp;
-                  {{ $items->count() }} ingredient{{ $items->count() !== 1 ? 's' : '' }}
-                </div>
               </div>
 
-              {{-- Right: production qty ── --}}
+              {{-- Right: production summary ── --}}
               <div class="text-right shrink-0">
-                <div class="text-xs font-medium text-gray-700">
+                <div class="text-xs font-semibold" style="color:var(--text-primary)">
                   {{ number_format((float) $first->production, 2) }}
-                  <span class="text-gray-400 font-normal">{{ $first->uom }}</span>
+                  <span class="font-normal text-[11px]" style="color:var(--text-muted)">{{ $first->uom }}</span>
                 </div>
-                <div class="text-[10px] text-gray-400 mt-0.5">
+                <div class="mt-0.5 text-[11px]" style="color:var(--text-muted)">
                   {{ $items->count() }} ingredient{{ $items->count() !== 1 ? 's' : '' }}
                 </div>
               </div>
@@ -272,29 +310,24 @@
             </div>
           </div>
 
-          {{-- Collapsible ingredient table ── --}}
-          <div
-            x-show="open"
-            x-collapse
-            class="border-t border-gray-100"
-          >
+          {{-- ── Ingredient table ── --}}
+          <div x-show="open" x-collapse class="border-t" style="border-color:var(--card-border)">
             <div class="overflow-x-auto">
               <table class="min-w-full text-sm">
-                <thead class="bg-gray-50 text-xs text-gray-500">
-                  <tr>
-                    <th class="px-5 py-2 text-left font-medium w-8">#</th>
-                    <th class="px-4 py-2 text-left font-medium">Code</th>
-                    <th class="px-4 py-2 text-left font-medium">Ingredient</th>
-                    <th class="px-4 py-2 text-left font-medium">Type</th>
-                    <th class="px-4 py-2 text-right font-medium whitespace-nowrap">Recipe qty</th>
-                    <th class="px-4 py-2 text-left font-medium">Recipe UOM</th>
-                    <th class="px-4 py-2 text-right font-medium whitespace-nowrap">Inv qty</th>
-                    <th class="px-4 py-2 text-left font-medium">Inv UOM</th>
-                    <th class="px-4 py-2 text-left font-medium">Status</th>
+                <thead>
+                  <tr class="border-b" style="background:#fafafa; border-color:var(--card-border)">
+                    <th class="px-5 py-2.5 text-left w-8 text-[11px] font-medium" style="color:var(--text-muted)">#</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">Code</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">Ingredient</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">Type</th>
+                    <th class="px-4 py-2.5 text-right text-[11px] font-medium whitespace-nowrap" style="color:var(--text-muted)">Recipe qty</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">UOM</th>
+                    <th class="px-4 py-2.5 text-right text-[11px] font-medium whitespace-nowrap" style="color:var(--text-muted)">Inv qty</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">Inv UOM</th>
+                    <th class="px-4 py-2.5 text-left text-[11px] font-medium" style="color:var(--text-muted)">Status</th>
                   </tr>
                 </thead>
 
-                {{-- One tbody per ingredient so conversi preview stays scoped ── --}}
                 @foreach ($items as $r)
                   @php
                     $isConversi = $r->itemStocked === 'yes'
@@ -319,35 +352,30 @@
                     @elseif ($isCombo && !empty($comboSlots))
                       x-data="comboPreview({{ $r->itemId }})"
                     @endif
-                    class="divide-y divide-gray-100"
+                    class="divide-y"
+                    style="border-color:var(--card-border)"
                   >
-                    {{-- Main ingredient row ── --}}
                     <tr
                       @if ($isConversi && $subItems->isNotEmpty())
                         @click="toggle()"
-                        class="hover:bg-violet-50 transition cursor-pointer"
+                        class="transition-colors cursor-pointer hover:bg-violet-50/60"
                       @elseif ($isCombo && !empty($comboSlots))
                         @click="toggle()"
-                        class="hover:bg-orange-50 transition cursor-pointer"
+                        class="transition-colors cursor-pointer hover:bg-orange-50/60"
                       @else
-                        class="hover:bg-gray-50 transition"
+                        class="transition-colors hover:bg-gray-50/60"
                       @endif
                     >
-                      <td class="px-5 py-2.5 text-xs text-gray-400">{{ $r->idx }}</td>
-                      <td class="px-4 py-2.5 text-xs text-gray-400 font-mono">{{ $r->itemCode }}</td>
-                      <td class="px-4 py-2.5 text-gray-800 font-medium">{{ $r->itemName }}</td>
+                      <td class="px-5 py-3 text-[11px]" style="color:var(--text-muted)">{{ $r->idx }}</td>
+                      <td class="px-4 py-3 text-[11px] font-mono" style="color:var(--text-muted)">{{ $r->itemCode }}</td>
+                      <td class="px-4 py-3 text-sm font-medium" style="color:var(--text-primary)">{{ $r->itemName }}</td>
 
-                      {{-- Type column ── --}}
-                      <td class="px-4 py-2.5">
+                      <td class="px-4 py-3">
                         @if ($isConversi)
                           <span class="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
                             conversi
                             @if ($subItems->isNotEmpty())
-                              <svg
-                                :class="open ? 'rotate-90' : ''"
-                                class="w-2.5 h-2.5 transition-transform duration-150"
-                                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-                              >
+                              <svg :class="open ? 'rotate-90' : ''" class="w-2.5 h-2.5 transition-transform duration-150" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                               </svg>
                             @endif
@@ -356,85 +384,82 @@
                           <span class="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700 ring-1 ring-inset ring-orange-200">
                             combo
                             @if (!empty($comboSlots))
-                              <svg
-                                :class="open ? 'rotate-90' : ''"
-                                class="w-2.5 h-2.5 transition-transform duration-150"
-                                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-                              >
+                              <svg :class="open ? 'rotate-90' : ''" class="w-2.5 h-2.5 transition-transform duration-150" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                               </svg>
                             @endif
                           </span>
                         @else
-                          <span class="text-[10px] text-gray-400">—</span>
+                          <span class="text-[10px]" style="color:var(--text-muted)">—</span>
                         @endif
                       </td>
 
-                      <td class="px-4 py-2.5 text-right tabular-nums">{{ number_format((float) $r->RecQty, 2) }}</td>
-                      <td class="px-4 py-2.5 text-xs text-gray-500">{{ $r->recipeUom }}</td>
-                      <td class="px-4 py-2.5 text-right tabular-nums">{{ number_format((float) $r->InvQty, 2) }}</td>
-                      <td class="px-4 py-2.5 text-xs text-gray-500">{{ $r->InvUom }}</td>
+                      <td class="px-4 py-3 text-right tabular-nums text-sm" style="color:var(--text-primary)">{{ number_format((float) $r->RecQty, 2) }}</td>
+                      <td class="px-4 py-3 text-[11px]" style="color:var(--text-muted)">{{ $r->recipeUom }}</td>
+                      <td class="px-4 py-3 text-right tabular-nums text-sm" style="color:var(--text-secondary)">{{ number_format((float) $r->InvQty, 2) }}</td>
+                      <td class="px-4 py-3 text-[11px]" style="color:var(--text-muted)">{{ $r->InvUom }}</td>
 
-                      {{-- Item active status ── --}}
-                      <td class="px-4 py-2.5">
+                      <td class="px-4 py-3">
                         @if ($r->itemActive === 'yes')
-                          <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">active</span>
+                          <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-200">
+                            <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>active
+                          </span>
                         @else
-                          <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-300">inactive</span>
+                          <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-300">
+                            <span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>inactive
+                          </span>
                         @endif
                       </td>
                     </tr>
 
-                    {{-- Conversi sub-recipe preview row ── --}}
+                    {{-- ── Conversi sub-recipe ── --}}
                     @if ($isConversi && $subItems->isNotEmpty())
-                      <tr x-show="open" x-collapse style="display: none;">
-                        <td colspan="9" class="p-0 bg-violet-50/50">
+                      <tr x-show="open" x-collapse style="display:none">
+                        <td colspan="9" class="p-0">
+                          <div class="bg-violet-50/40 border-l-2 border-violet-300 ml-12 mr-4 my-2 rounded-xl overflow-hidden">
 
-                          <div class="px-10 py-3">
-                            <div class="mb-2 flex items-center justify-between gap-3">
-                              <div class="flex items-center gap-1.5 text-[10px] font-medium text-violet-600">
-                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+                            <div class="px-4 py-2.5 flex items-center justify-between gap-3 border-b border-violet-100">
+                              <div class="flex items-center gap-1.5 text-[11px] font-medium text-violet-600">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                 </svg>
-                                Conversi breakdown — {{ $r->itemName }}
+                                Conversi — {{ $r->itemName }}
                               </div>
                               @if ($subItems->isNotEmpty())
-                                <div class="text-[10px] text-violet-500 font-medium">
-                                  Produces:
-                                  <span class="font-semibold text-violet-700">
-                                    {{ number_format((float) $subItems->first()->conversiProduction, 2) }}
-                                    {{ $subItems->first()->conversiUom }}
-                                  </span>
+                                <div class="text-[10px] text-violet-500">
+                                  Produces: <span class="font-semibold text-violet-700">{{ number_format((float) $subItems->first()->conversiProduction, 2) }} {{ $subItems->first()->conversiUom }}</span>
                                 </div>
                               @endif
                             </div>
 
-                            <table class="min-w-full text-xs rounded-lg overflow-hidden ring-1 ring-violet-100">
-                              <thead class="bg-violet-100/60 text-[10px] text-violet-700">
-                                <tr>
-                                  <th class="px-3 py-1.5 text-left font-medium">#</th>
-                                  <th class="px-3 py-1.5 text-left font-medium">Code</th>
-                                  <th class="px-3 py-1.5 text-left font-medium">Item</th>
-                                  <th class="px-3 py-1.5 text-right font-medium whitespace-nowrap">Recipe qty</th>
-                                  <th class="px-3 py-1.5 text-left font-medium">Recipe UOM</th>
-                                  <th class="px-3 py-1.5 text-right font-medium whitespace-nowrap">Inv qty</th>
-                                  <th class="px-3 py-1.5 text-left font-medium">Inv UOM</th>
-                                  <th class="px-3 py-1.5 text-left font-medium">Status</th>
+                            <table class="min-w-full text-xs">
+                              <thead>
+                                <tr class="border-b border-violet-100 bg-violet-100/50">
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">#</th>
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">Code</th>
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">Item</th>
+                                  <th class="px-3 py-2 text-right font-medium text-violet-600 whitespace-nowrap">Recipe qty</th>
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">UOM</th>
+                                  <th class="px-3 py-2 text-right font-medium text-violet-600 whitespace-nowrap">Inv qty</th>
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">Inv UOM</th>
+                                  <th class="px-3 py-2 text-left font-medium text-violet-600">Status</th>
                                 </tr>
                               </thead>
-                              <tbody class="divide-y divide-violet-100 bg-white">
+                              <tbody class="divide-y divide-violet-100 bg-white/60">
                                 @foreach ($subItems as $sub)
-                                  <tr class="hover:bg-violet-50/40 transition">
-                                    <td class="px-3 py-1.5 text-gray-400">{{ $sub->idx }}</td>
-                                    <td class="px-3 py-1.5 font-mono text-gray-400">{{ $sub->itemCode }}</td>
-                                    <td class="px-3 py-1.5 text-gray-700">{{ $sub->itemName }}</td>
-                                    <td class="px-3 py-1.5 text-right tabular-nums">{{ number_format((float) $sub->RecQty, 2) }}</td>
-                                    <td class="px-3 py-1.5 text-gray-400">{{ $sub->recipeUom }}</td>
-                                    <td class="px-3 py-1.5 text-right tabular-nums">{{ number_format((float) $sub->InvQty, 2) }}</td>
-                                    <td class="px-3 py-1.5 text-gray-400">{{ $sub->InvUom }}</td>
-                                    <td class="px-3 py-1.5">
+                                  <tr class="hover:bg-violet-50/40 transition-colors">
+                                    <td class="px-3 py-2 text-gray-400">{{ $sub->idx }}</td>
+                                    <td class="px-3 py-2 font-mono text-gray-400">{{ $sub->itemCode }}</td>
+                                    <td class="px-3 py-2 text-gray-700 font-medium">{{ $sub->itemName }}</td>
+                                    <td class="px-3 py-2 text-right tabular-nums text-gray-700">{{ number_format((float) $sub->RecQty, 2) }}</td>
+                                    <td class="px-3 py-2 text-gray-400">{{ $sub->recipeUom }}</td>
+                                    <td class="px-3 py-2 text-right tabular-nums text-gray-600">{{ number_format((float) $sub->InvQty, 2) }}</td>
+                                    <td class="px-3 py-2 text-gray-400">{{ $sub->InvUom }}</td>
+                                    <td class="px-3 py-2">
                                       @if ($sub->itemActive === 'yes')
-                                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">active</span>
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-1.5 py-0.5 text-[9px] font-medium text-green-700 ring-1 ring-inset ring-green-200">
+                                          <span class="h-1 w-1 rounded-full bg-green-500"></span>active
+                                        </span>
                                       @else
                                         <span class="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] text-gray-400 ring-1 ring-inset ring-gray-300">inactive</span>
                                       @endif
@@ -444,84 +469,67 @@
                               </tbody>
                             </table>
                           </div>
-
                         </td>
                       </tr>
                     @endif
 
-                    {{-- Combo sub-menu preview row ── --}}
+                    {{-- ── Combo sub-menu ── --}}
                     @if ($isCombo && !empty($comboSlots))
-                      <tr x-show="open" x-collapse style="display: none;">
-                        <td colspan="9" class="p-0 bg-orange-50/40">
-                          <div class="px-10 py-3">
+                      <tr x-show="open" x-collapse style="display:none">
+                        <td colspan="9" class="p-0">
+                          <div class="bg-orange-50/30 border-l-2 border-orange-300 ml-12 mr-4 my-2 rounded-xl overflow-hidden">
 
-                            {{-- Combo item detail header ── --}}
-                            <div class="mb-3 rounded-lg border border-orange-100 bg-white px-4 py-3">
-                              <div class="flex flex-wrap items-start justify-between gap-3">
-
-                                {{-- Left: name + code + flags ── --}}
-                                <div>
-                                  <div class="flex items-center gap-2">
-                                    <svg class="w-3.5 h-3.5 shrink-0 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                                    </svg>
-                                    <span class="text-sm font-semibold text-gray-800">{{ $r->itemName }}</span>
-                                    @if ($r->itemActive === 'yes')
-                                      <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">active</span>
-                                    @else
-                                      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-300">inactive</span>
-                                    @endif
-                                  </div>
-
-                                  @if ($r->itemCode)
-                                    <div class="mt-0.5 ml-5 font-mono text-[11px] text-gray-400">{{ $r->itemCode }}</div>
+                            {{-- Combo header ── --}}
+                            <div class="flex flex-wrap items-start justify-between gap-3 border-b border-orange-100 px-4 py-3">
+                              <div>
+                                <div class="flex items-center gap-2">
+                                  <svg class="w-3.5 h-3.5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                  </svg>
+                                  <span class="text-sm font-semibold" style="color:var(--text-primary)">{{ $r->itemName }}</span>
+                                  @if ($r->itemActive === 'yes')
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-200">
+                                      <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>active
+                                    </span>
+                                  @else
+                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-300">inactive</span>
                                   @endif
-
-                                  {{-- Flag badges ── --}}
-                                  <div class="mt-2 ml-5 flex flex-wrap gap-1.5">
-                                    <span class="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-inset ring-orange-200">combo</span>
-
-                                    @if ($r->itemSales === 'yes')
-                                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">sales</span>
-                                    @else
-                                      <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no sales</span>
-                                    @endif
-
-                                    @if ($r->itemPurchased === 'yes')
-                                      <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200">purchased</span>
-                                    @else
-                                      <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no purchase</span>
-                                    @endif
-
-                                    @if ($r->itemStocked === 'yes')
-                                      <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200">stocked</span>
-                                    @else
-                                      <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-inset ring-gray-200">no stock</span>
-                                    @endif
-                                  </div>
                                 </div>
-
-                                {{-- Right: UOM info ── --}}
-                                <div class="flex gap-4 text-right text-xs">
-                                  <div>
-                                    <div class="text-[10px] text-gray-400">Recipe UOM</div>
-                                    <div class="font-medium text-gray-700">{{ $r->recipeUom ?: '—' }}</div>
-                                  </div>
-                                  <div>
-                                    <div class="text-[10px] text-gray-400">Inv UOM</div>
-                                    <div class="font-medium text-gray-700">{{ $r->InvUom ?: '—' }}</div>
-                                  </div>
-                                  <div>
-                                    <div class="text-[10px] text-gray-400">Groups</div>
-                                    <div class="font-semibold text-orange-600">{{ count($comboSlots) }}</div>
-                                  </div>
+                                @if ($r->itemCode)
+                                  <div class="mt-0.5 ml-5 font-mono text-[11px]" style="color:var(--text-muted)">{{ $r->itemCode }}</div>
+                                @endif
+                                <div class="mt-2 ml-5 flex flex-wrap gap-1.5">
+                                  <span class="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-inset ring-orange-200">combo</span>
+                                  @if ($r->itemSales === 'yes')
+                                    <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-200">sales</span>
+                                  @endif
+                                  @if ($r->itemPurchased === 'yes')
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200">purchased</span>
+                                  @endif
+                                  @if ($r->itemStocked === 'yes')
+                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200">stocked</span>
+                                  @endif
                                 </div>
+                              </div>
 
+                              <div class="flex gap-5 text-right text-xs">
+                                <div>
+                                  <div class="text-[10px]" style="color:var(--text-muted)">Recipe UOM</div>
+                                  <div class="font-medium" style="color:var(--text-primary)">{{ $r->recipeUom ?: '—' }}</div>
+                                </div>
+                                <div>
+                                  <div class="text-[10px]" style="color:var(--text-muted)">Inv UOM</div>
+                                  <div class="font-medium" style="color:var(--text-primary)">{{ $r->InvUom ?: '—' }}</div>
+                                </div>
+                                <div>
+                                  <div class="text-[10px]" style="color:var(--text-muted)">Groups</div>
+                                  <div class="font-semibold text-orange-600">{{ count($comboSlots) }}</div>
+                                </div>
                               </div>
                             </div>
 
-                            {{-- Combo menu choice groups ── --}}
-                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-{{ min(count($comboSlots), 4) }}">
+                            {{-- Combo choice groups ── --}}
+                            <div class="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-{{ min(count($comboSlots), 4) }}">
                               @foreach ($comboSlots as $comboSlot)
                                 <x-modifier-page
                                   :page-id="$comboSlot['pageId']"
@@ -532,7 +540,6 @@
                                 />
                               @endforeach
                             </div>
-
                           </div>
                         </td>
                       </tr>
@@ -541,15 +548,12 @@
                   </tbody>
                 @endforeach
 
-                <tfoot class="bg-gray-50 text-xs text-gray-400">
-                  <tr>
-                    <td colspan="2" class="px-5 py-2">
-                      Production:
-                      <span class="font-medium text-gray-700">
-                        {{ number_format((float) $first->production, 2) }} {{ $first->uom }}
-                      </span>
+                <tfoot>
+                  <tr class="border-t" style="background:#fafafa; border-color:var(--card-border)">
+                    <td colspan="2" class="px-5 py-2.5 text-[11px]" style="color:var(--text-muted)">
+                      Production: <span class="font-semibold" style="color:var(--text-primary)">{{ number_format((float) $first->production, 2) }} {{ $first->uom }}</span>
                     </td>
-                    <td colspan="7" class="px-4 py-2 text-right">
+                    <td colspan="7" class="px-4 py-2.5 text-right text-[11px]" style="color:var(--text-muted)">
                       {{ $items->count() }} ingredient{{ $items->count() !== 1 ? 's' : '' }}
                     </td>
                   </tr>
@@ -557,38 +561,33 @@
               </table>
             </div>
 
-            {{-- ── Modifier pages section ── --}}
+            {{-- ── Modifier pages ── --}}
             @if ($first->sales === 'yes' && isset($modifierData[$recipeId]) && count($modifierData[$recipeId]) > 0)
-              <div class="border-t border-gray-100">
+              <div class="border-t" style="border-color:var(--card-border)">
 
-                {{-- Modifier section header with toggle ── --}}
                 <div
                   @click="openModifiers = !openModifiers"
-                  class="flex cursor-pointer items-center justify-between px-5 py-3 hover:bg-gray-50 transition select-none"
+                  class="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-gray-50 select-none"
                 >
                   <div class="flex items-center gap-2">
-                    <svg
-                      :class="openModifiers ? 'rotate-90' : ''"
-                      class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 shrink-0"
-                      fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                    <span class="text-xs font-medium text-gray-600">Modifier Pages</span>
+                    <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors" :class="openModifiers ? 'bg-indigo-100' : 'bg-gray-100'">
+                      <svg
+                        :class="openModifiers ? 'rotate-90 text-indigo-600' : 'text-gray-400'"
+                        class="w-3 h-3 transition-transform duration-200"
+                        fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </div>
+                    <span class="text-xs font-medium" style="color:var(--text-secondary)">Modifier Pages</span>
                     <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600 ring-1 ring-inset ring-indigo-200">
                       {{ count($modifierData[$recipeId]) }} page{{ count($modifierData[$recipeId]) !== 1 ? 's' : '' }}
                     </span>
                   </div>
                 </div>
 
-                {{-- Modifier pages grid ── --}}
-                <div
-                  x-show="openModifiers"
-                  x-collapse
-                  class="px-5 pb-5"
-                >
+                <div x-show="openModifiers" x-collapse class="px-5 pb-5">
                   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-{{ min(count($modifierData[$recipeId]), 4) }}">
-
                     @foreach ($modifierData[$recipeId] as $modSlot)
                       <x-modifier-page
                         :page-id="$modSlot['pageId']"
@@ -597,7 +596,6 @@
                         :all-items="$modifierItems"
                       />
                     @endforeach
-
                   </div>
                 </div>
 
@@ -605,7 +603,6 @@
             @endif
 
           </div>
-
         </div>
       @endforeach
 
@@ -614,42 +611,32 @@
 
   {{-- ── Pagination ── --}}
   @if ($paginator->hasPages())
-    <div class="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm text-sm">
+    <div class="flex items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm" style="border-color:var(--card-border); box-shadow:var(--card-shadow)">
 
-      <span class="text-gray-400 text-xs">
+      <span class="text-xs" style="color:var(--text-muted)">
         Page {{ $paginator->currentPage() }} of {{ $paginator->lastPage() }}
-        &nbsp;·&nbsp;
-        {{ $total }} recipes total
+        &nbsp;·&nbsp; {{ $total }} recipes total
       </span>
 
       <div class="flex items-center gap-1">
-        {{-- Previous ── --}}
         @if ($paginator->onFirstPage())
-          <span class="rounded-lg border border-gray-100 px-3 py-1.5 text-xs text-gray-300 cursor-not-allowed">← Prev</span>
+          <span class="rounded-lg border px-3 py-1.5 text-xs cursor-not-allowed" style="border-color:var(--card-border); color:var(--text-muted)">← Prev</span>
         @else
-          <a
-            href="{{ $paginator->previousPageUrl() }}"
-            class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition"
-          >← Prev</a>
+          <a href="{{ $paginator->previousPageUrl() }}" class="rounded-lg border px-3 py-1.5 text-xs transition hover:bg-gray-50" style="border-color:var(--card-border); color:var(--text-secondary)">← Prev</a>
         @endif
 
-        {{-- Page numbers ── --}}
         @foreach ($paginator->getUrlRange(max(1, $paginator->currentPage() - 2), min($paginator->lastPage(), $paginator->currentPage() + 2)) as $page => $url)
           @if ($page == $paginator->currentPage())
             <span class="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">{{ $page }}</span>
           @else
-            <a href="{{ $url }}" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">{{ $page }}</a>
+            <a href="{{ $url }}" class="rounded-lg border px-3 py-1.5 text-xs transition hover:bg-gray-50" style="border-color:var(--card-border); color:var(--text-secondary)">{{ $page }}</a>
           @endif
         @endforeach
 
-        {{-- Next ── --}}
         @if ($paginator->hasMorePages())
-          <a
-            href="{{ $paginator->nextPageUrl() }}"
-            class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition"
-          >Next →</a>
+          <a href="{{ $paginator->nextPageUrl() }}" class="rounded-lg border px-3 py-1.5 text-xs transition hover:bg-gray-50" style="border-color:var(--card-border); color:var(--text-secondary)">Next →</a>
         @else
-          <span class="rounded-lg border border-gray-100 px-3 py-1.5 text-xs text-gray-300 cursor-not-allowed">Next →</span>
+          <span class="rounded-lg border px-3 py-1.5 text-xs cursor-not-allowed" style="border-color:var(--card-border); color:var(--text-muted)">Next →</span>
         @endif
       </div>
 

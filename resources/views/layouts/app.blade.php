@@ -74,9 +74,9 @@
     }
 
     .loading-logo {
-      height: 56px;
+      height: 100px;
       width: auto;
-      filter: brightness(0) invert(1);
+      /* filter: brightness(0) invert(1); */
       opacity: 0.9;
     }
 

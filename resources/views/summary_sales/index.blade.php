@@ -16,16 +16,19 @@
     </div>
 
     <div class="flex gap-2">
-      
-
       <a href="{{ route('summarySales.export', request()->query()) }}"
          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
          Export CSV
       </a>
       <button
+        type="button"
         @click="showFilter = !showFilter"
-        class="px-4 py-2 border rounded hover:bg-gray-50">
-        Filter
+        class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white transition active:scale-95"
+        :class="showFilter ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        <span x-text="showFilter ? 'Hide Filters' : 'Filters'"></span>
       </button>
     </div>
   </div>
@@ -34,6 +37,12 @@
 <form
   x-show="showFilter"
   x-cloak
+  x-transition:enter="transition ease-out duration-200"
+  x-transition:enter-start="opacity-0 -translate-y-2"
+  x-transition:enter-end="opacity-100 translate-y-0"
+  x-transition:leave="transition ease-in duration-150"
+  x-transition:leave-start="opacity-100 translate-y-0"
+  x-transition:leave-end="opacity-0 -translate-y-2"
   method="GET"
   action="{{ route('summarySales.index') }}"
   class="border rounded-xl p-4 bg-white grid grid-cols-1 md:grid-cols-4 gap-4">

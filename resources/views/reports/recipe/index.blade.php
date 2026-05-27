@@ -1,80 +1,109 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6">
+<div x-data="{ filtersOpen: {{ request()->except('page') ? 'true' : 'false' }} }" class="space-y-6">
   <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h1 class="text-lg font-semibold">{{ $title }}</h1>
 
-    <div class="flex flex-wrap items-end gap-2">
+    <div class="flex items-center gap-2">
       <a
         href="{{ route('reports.recipe.export', request()->query()) }}"
-        class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         Export CSV
       </a>
+      <button type="button" @click="filtersOpen = !filtersOpen"
+        class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white transition active:scale-95"
+        :class="filtersOpen ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        <span x-text="filtersOpen ? 'Hide Filters' : 'Filters'"></span>
+      </button>
     </div>
   </div>
 
-  <form method="GET" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-      <div class="lg:col-span-2">
-        <label class="block text-xs font-medium text-gray-600">Search</label>
-        <input
-          type="text"
-          name="q"
-          value="{{ $q }}"
-          placeholder="Recipe or ingredient..."
-          class="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+  <div
+    x-show="filtersOpen" x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 -translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 -translate-y-2"
+  >
+    <form method="GET" class="gfs-card p-5">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="sm:col-span-2 lg:col-span-2">
+          <label for="f-q" class="mb-1 block text-xs font-medium" style="color:var(--text-muted)">Search</label>
+          <input
+            id="f-q"
+            type="text"
+            name="q"
+            value="{{ $q }}"
+            placeholder="Recipe or ingredient..."
+            class="w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+            style="border-color:var(--card-border); color:var(--text-primary)"
+          >
+        </div>
+
+        <div>
+          <label for="f-sales" class="mb-1 block text-xs font-medium" style="color:var(--text-muted)">Sales</label>
+          <select id="f-sales" name="sales"
+            class="w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+            style="border-color:var(--card-border); color:var(--text-primary)">
+            <option value="">All</option>
+            <option value="yes" {{ $sales === 'yes' ? 'selected' : '' }}>Yes</option>
+            <option value="no" {{ $sales === 'no' ? 'selected' : '' }}>No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="f-purchased" class="mb-1 block text-xs font-medium" style="color:var(--text-muted)">Purchased</label>
+          <select id="f-purchased" name="purchased"
+            class="w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+            style="border-color:var(--card-border); color:var(--text-primary)">
+            <option value="">All</option>
+            <option value="yes" {{ $purchased === 'yes' ? 'selected' : '' }}>Yes</option>
+            <option value="no" {{ $purchased === 'no' ? 'selected' : '' }}>No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="f-stocked" class="mb-1 block text-xs font-medium" style="color:var(--text-muted)">Stocked</label>
+          <select id="f-stocked" name="stocked"
+            class="w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+            style="border-color:var(--card-border); color:var(--text-primary)">
+            <option value="">All</option>
+            <option value="yes" {{ $stocked === 'yes' ? 'selected' : '' }}>Yes</option>
+            <option value="no" {{ $stocked === 'no' ? 'selected' : '' }}>No</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <label class="inline-flex items-center gap-2 text-sm" style="color:var(--text-secondary)">
+            <input type="checkbox" name="hide_zero" value="1" {{ $hideZero ? 'checked' : '' }}
+              class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+            Hide zero cost
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-end gap-2 border-t pt-4" style="border-color:var(--card-border)">
+        <a
+          href="{{ route('reports.recipe') }}"
+          class="rounded-lg border bg-white px-4 py-2 text-sm font-medium transition hover:bg-gray-50"
+          style="border-color:var(--card-border); color:var(--text-secondary)"
         >
+          Clear
+        </a>
+        <button type="submit"
+          class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 active:scale-95">
+          Apply
+        </button>
       </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-600">Sales</label>
-        <select name="sales" class="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $sales === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no" {{ $sales === 'no' ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-600">Purchased</label>
-        <select name="purchased" class="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $purchased === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no" {{ $purchased === 'no' ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-600">Stocked</label>
-        <select name="stocked" class="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
-          <option value="">All</option>
-          <option value="yes" {{ $stocked === 'yes' ? 'selected' : '' }}>Yes</option>
-          <option value="no" {{ $stocked === 'no' ? 'selected' : '' }}>No</option>
-        </select>
-      </div>
-
-      <div class="flex items-end">
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" name="hide_zero" value="1" {{ $hideZero ? 'checked' : '' }}>
-          Hide zero cost
-        </label>
-      </div>
-    </div>
-
-    <div class="mt-4 flex items-center gap-2">
-      <button class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white">
-        Apply
-      </button>
-      <a
-        href="{{ route('reports.recipe') }}"
-        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-      >
-        Clear
-      </a>
-    </div>
-  </form>
+    </form>
+  </div>
 
   @if($byRecipe->isEmpty())
     <div class="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500 shadow-sm">
@@ -91,9 +120,9 @@
         $expectedPerUnit = $production > 0 ? $expectedTotal / $production : 0;
         $actualPerUnit   = $production > 0 ? $actualTotal / $production : 0;
         $variance = $actualPerUnit - $expectedPerUnit;
-        
-        
-        
+
+
+
     @endphp
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm mb-6">
