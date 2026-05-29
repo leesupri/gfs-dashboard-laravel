@@ -98,25 +98,38 @@ class TransferDetailController extends Controller
             ->orderBy('category')
             ->orderBy('item_name')
             ->orderBy('transfer_id')
+            ->limit(2000)
             ->get();
 
-        $groupedRows = $rows->groupBy('category')->map(function ($categoryItems, $categoryName) {
-            $itemGroups = $categoryItems->groupBy('item_name')->map(function ($itemItems, $itemName) {
-                return [
-                    'item_name' => $itemName,
-                    'item_code' => $itemItems->first()->item_code,
-                    'uom' => $itemItems->first()->uom,
-                    'rows' => $itemItems,
-                    'total_qty' => $itemItems->sum(fn ($row) => (float) $row->quantity),
-                ];
-            })->values();
+        $truncated = $rows->count() >= 2000;
 
-            return [
-                'category' => $categoryName,
-                'items' => $itemGroups,
-                'total_qty' => $categoryItems->sum(fn ($row) => (float) $row->quantity),
-            ];
-        })->values();
+        // Build nested structure with plain arrays to minimise memory overhead
+        $groupedRows = [];
+        foreach ($rows as $row) {
+            $cat  = $row->category;
+            $iKey = $row->item_name;
+
+            if (!isset($groupedRows[$cat])) {
+                $groupedRows[$cat] = ['category' => $cat, 'items' => [], 'total_qty' => 0.0];
+            }
+            if (!isset($groupedRows[$cat]['items'][$iKey])) {
+                $groupedRows[$cat]['items'][$iKey] = [
+                    'item_name' => $iKey,
+                    'item_code' => $row->item_code,
+                    'uom'       => $row->uom,
+                    'rows'      => [],
+                    'total_qty' => 0.0,
+                ];
+            }
+            $groupedRows[$cat]['items'][$iKey]['rows'][]    = $row;
+            $groupedRows[$cat]['items'][$iKey]['total_qty'] += (float) $row->quantity;
+            $groupedRows[$cat]['total_qty']                 += (float) $row->quantity;
+        }
+
+        foreach ($groupedRows as &$cg) {
+            $cg['items'] = array_values($cg['items']);
+        }
+        $groupedRows = array_values($groupedRows);
 
         $summary = (clone $baseQuery)
             ->selectRaw('
@@ -127,17 +140,18 @@ class TransferDetailController extends Controller
             ->first();
 
         return view('reports.transfer-detail', [
-            'title' => 'Transfer Detail Report',
-            'groupedRows' => $groupedRows,
-            'start' => $start,
-            'end' => $end,
-            'fromWarehouse' => $fromWarehouse,
-            'toWarehouse' => $toWarehouse,
-            'category' => $category,
-            'item' => $item,
-            'transferId' => $transferId,
-            'q' => $q,
-            'summary' => $summary,
+            'title'        => 'Transfer Detail Report',
+            'groupedRows'  => $groupedRows,
+            'truncated'    => $truncated,
+            'start'        => $start,
+            'end'          => $end,
+            'fromWarehouse'=> $fromWarehouse,
+            'toWarehouse'  => $toWarehouse,
+            'category'     => $category,
+            'item'         => $item,
+            'transferId'   => $transferId,
+            'q'            => $q,
+            'summary'      => $summary,
         ]);
     }
 

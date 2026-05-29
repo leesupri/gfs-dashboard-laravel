@@ -17,7 +17,7 @@ class StaffAuth
             return redirect()->route('login');
         }
 
-        $staffUser = StaffUser::find($staffUserId);
+        $staffUser = StaffUser::with('permissions')->find($staffUserId);
 
         if (! $staffUser || ! $staffUser->is_active) {
             $request->session()->forget('staff_user_id');

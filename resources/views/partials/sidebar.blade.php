@@ -36,6 +36,8 @@
     'settings.staff',
     'settings.security',
     'settings.changePassword',
+    'settings.pageLog',
+    'log-viewer.index',
   ];
 
   $settingsOpen = in_array($routeName, $settingsRoutes, true);
@@ -52,6 +54,7 @@
   x-transition:leave-start="translate-x-0 opacity-100 scale-100"
   x-transition:leave-end="-translate-x-full opacity-0 scale-[0.98]"
   class="sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col md:hidden"
+  aria-label="Mobile navigation"
 >
   <div x-data="{ collapsed: false }" class="flex h-full flex-col">
     <div class="flex h-14 items-center justify-between gap-2 border-b px-4" style="border-color:var(--sidebar-border)">
@@ -78,7 +81,7 @@
       <div class="text-xs" style="color:var(--sidebar-text)">{{ $currentStaffUser->title ?? 'User' }}</div>
     </div>
 
-    <nav class="flex-1 space-y-1 overflow-y-auto p-3">
+    <nav class="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Main navigation">
       @foreach ($nav as $item)
         @include('partials.sidebar-nav-item', [
           'href' => $item['href'],
@@ -143,6 +146,24 @@
             'icon' => 'key',
             'active' => $routeName === 'settings.changePassword',
           ])
+
+          @if(($currentStaffUser ?? null)?->hasAccess('settings.pageLog'))
+            @include('partials.sidebar-settings-item', [
+              'href' => route('settings.pageLog'),
+              'label' => 'Activity Log',
+              'icon' => 'activity',
+              'active' => $routeName === 'settings.pageLog',
+            ])
+          @endif
+
+          @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
+            @include('partials.sidebar-settings-item', [
+              'href' => route('log-viewer.index'),
+              'label' => 'Log Viewer',
+              'icon' => 'terminal',
+              'active' => str_starts_with($routeName, 'log-viewer'),
+            ])
+          @endif
         </div>
       </div>
 
@@ -164,6 +185,7 @@
 <aside
   :class="collapsed ? 'w-20' : 'w-64'"
   class="sidebar relative z-40 hidden md:flex md:flex-col overflow-visible"
+  aria-label="Desktop navigation"
 >
   <div class="flex h-14 items-center gap-2 border-b px-4" style="border-color:var(--sidebar-border)">
     <a href="{{ route('welcome') }}" class="flex items-center gap-2">
@@ -187,8 +209,7 @@
     </div>
   </div>
 
-  <nav class="relative z-40 flex-1 overflow-visible p-3">
-  
+  <nav class="relative z-40 flex-1 overflow-visible p-3" aria-label="Main navigation">
     @foreach ($nav as $item)
       @include('partials.sidebar-nav-item', [
         'href' => $item['href'],
@@ -197,8 +218,7 @@
         'active' => $routeName === $item['key'],
       ])
     @endforeach
-  
-</nav>
+  </nav>
 
   <div class="border-t p-3 space-y-2" style="border-color:var(--sidebar-border)">
     <div x-data="{ open: {{ $settingsOpen ? 'true' : 'false' }} }" class="space-y-2">
@@ -222,7 +242,7 @@
 
         <div x-show="collapsed"
      x-cloak
-     class="pointer-events-none absolute left-full top-1/2 z-[9999] ml-3 -translate-y-1/2 whitespace-nowrap rounded bg-gray-900 px-3 py-1.5 text-xs text-white shadow-xl opacity-0 transition group-hover:opacity-100">
+     class="pointer-events-none absolute left-full top-1/2 z-9999 ml-3 -translate-y-1/2 whitespace-nowrap rounded bg-gray-900 px-3 py-1.5 text-xs text-white shadow-xl opacity-0 transition group-hover:opacity-100">
           Settings
         </div>
       </button>
@@ -262,6 +282,24 @@
           'icon' => 'key',
           'active' => $routeName === 'settings.changePassword',
         ])
+
+        @if(($currentStaffUser ?? null)?->hasAccess('settings.pageLog'))
+          @include('partials.sidebar-settings-item', [
+            'href' => route('settings.pageLog'),
+            'label' => 'Activity Log',
+            'icon' => 'activity',
+            'active' => $routeName === 'settings.pageLog',
+          ])
+        @endif
+
+        @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
+          @include('partials.sidebar-settings-item', [
+            'href' => route('log-viewer.index'),
+            'label' => 'Log Viewer',
+            'icon' => 'terminal',
+            'active' => str_starts_with($routeName, 'log-viewer'),
+          ])
+        @endif
       </div>
     </div>
 
@@ -278,7 +316,7 @@
 
       <div x-show="collapsed"
      x-cloak
-     class="pointer-events-none absolute left-full top-1/2 z-[9999] ml-3 -translate-y-1/2 whitespace-nowrap rounded bg-gray-900 px-3 py-1.5 text-xs text-white shadow-xl opacity-0 transition group-hover:opacity-100">
+     class="pointer-events-none absolute left-full top-1/2 z-9999 ml-3 -translate-y-1/2 whitespace-nowrap rounded bg-gray-900 px-3 py-1.5 text-xs text-white shadow-xl opacity-0 transition group-hover:opacity-100">
         Logout
       </div>
     </div>

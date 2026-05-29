@@ -27,136 +27,87 @@ class SummarySalesController extends Controller
             'profit'    => $this->profitSummary($from, $to),
             'stats'     => $this->visitorStats($from, $to),
             'voids'     => $this->voidSummary($from, $to),
+            'noSales'   => $this->noSalesSummary($from, $to),
             'filters'   => compact('from','to')
         ]);
     }
 
     /* ===================== CSV EXPORT ===================== */
     public function exportCsv(Request $request): StreamedResponse
-{
-    [$from, $to] = $this->dateRange($request);
+    {
+        [$from, $to] = $this->dateRange($request);
 
-    // Prepare all data OUTSIDE the stream
-    $summary     = $this->summaryTotals($from, $to);
-    $payments    = $this->paymentSummary($from, $to);
-    $departments = $this->departmentSummary($from, $to);
-    $categories  = $this->categorySummary($from, $to);
-    $profit      = $this->profitSummary($from, $to);
-    $stats       = $this->visitorStats($from, $to);
-    $voids       = $this->voidSummary($from, $to);
-    $filename = 'summary_sales_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.csv';
+        $summary     = $this->summaryTotals($from, $to);
+        $payments    = $this->paymentSummary($from, $to);
+        $departments = $this->departmentSummary($from, $to);
+        $categories  = $this->categorySummary($from, $to);
+        $profit      = $this->profitSummary($from, $to);
+        $stats       = $this->visitorStats($from, $to);
+        $voids       = $this->voidSummary($from, $to);
+        $noSales     = $this->noSalesSummary($from, $to);
+        $filename    = 'summary_sales_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.csv';
 
-    return response()->streamDownload(function () use (
-        $summary,
-        $payments,
-        $departments,
-        $categories,
-        $profit,
-        $stats,
-        $voids
-    ) {
-        $out = fopen('php://output', 'w');
+        return response()->streamDownload(function () use (
+            $summary, $payments, $departments, $categories,
+            $profit, $stats, $voids, $noSales
+        ) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // UTF-8 BOM (Excel safe)
-        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+            // Summary header rows
+            fputcsv($out, ['SUMMARY SALES']);
+            fputcsv($out, ['Subtotal',  $summary->subtotal]);
+            fputcsv($out, ['Discount',  $summary->discount]);
+            fputcsv($out, ['Net Sales', $summary->subtotal - $summary->discount]);
+            if ($summary->service > 0)   { fputcsv($out, ['Service Charge', $summary->service]);  }
+            if ($summary->tax > 0)       { fputcsv($out, ['Tax',            $summary->tax]);       }
+            if ($summary->rounding != 0) { fputcsv($out, ['Rounding',       $summary->rounding]);  }
+            fputcsv($out, ['TOTAL', $summary->total]);
+            fputcsv($out, []);
 
-        /* ================= SUMMARY ================= */
-        fputcsv($out, ['SUMMARY SALES']);
-        fputcsv($out, ['Subtotal', $summary->subtotal]);
-        fputcsv($out, ['Discount', $summary->discount]);
-        fputcsv($out, ['Net Sales', $summary->subtotal - $summary->discount]);
+            // Tabular sections
+            $this->writeCsvTable($out, 'PAYMENT',    ['Method',     'Qty', 'Amount', 'Percent'], $payments,    fn($p) => [$p->name,        $p->qty, $p->amount, round($p->percentage, 2).'%']);
+            $this->writeCsvTable($out, 'DEPARTMENT', ['Department', 'Qty', 'Sales',  'Percent'], $departments, fn($d) => [$d->department,   $d->qty, $d->price,  round($d->percent,     2).'%']);
+            $this->writeCsvTable($out, 'CATEGORY',   ['Category',   'Qty', 'Sales',  'Percent'], $categories,  fn($c) => [$c->category,     $c->qty, $c->price,  round($c->percent,     2).'%']);
+            $this->writeCsvTable($out, 'VOID',       ['Reason',     'Qty', 'Amount'            ], $voids,      fn($v) => [$v->description,  $v->qty, $v->price]);
+            $this->writeCsvTable($out, 'NO SALES',   ['Cashier',    'Count', 'Amount'          ], $noSales,    fn($n) => [$n->name,         $n->qty, $n->amount]);
 
-        if ($summary->service > 0) {
-            fputcsv($out, ['Service Charge', $summary->service]);
-        }
+            if ($noSales->isNotEmpty()) {
+                fputcsv($out, ['Total', $noSales->sum('qty'), $noSales->sum('amount')]);
+            }
 
-        if ($summary->tax > 0) {
-            fputcsv($out, ['Tax', $summary->tax]);
-        }
+            // Profit & Loss
+            fputcsv($out, []);
+            fputcsv($out, ['PROFIT & LOSS']);
+            fputcsv($out, ['Subtotal',   $profit->subtotal]);
+            fputcsv($out, ['Discount',   $profit->discount]);
+            fputcsv($out, ['Net Sales',  $profit->netSales]);
+            fputcsv($out, ['Total Cost', $profit->totalCost]);
+            fputcsv($out, ['Cost %',     round($profit->costPercent, 2).'%']);
+            fputcsv($out, ['Profit',     $profit->profit]);
+            fputcsv($out, []);
 
-        if ($summary->rounding != 0) {
-            fputcsv($out, ['Rounding', $summary->rounding]);
-        }
+            // Visitor statistics
+            fputcsv($out, ['VISITOR STATISTIC']);
+            fputcsv($out, ['Total Sales',       $stats->ttl]);
+            fputcsv($out, ['Total Guest',        $stats->guest]);
+            fputcsv($out, ['Avg / Guest',        $stats->avgGuest]);
+            fputcsv($out, ['Transactions',       $stats->trans]);
+            fputcsv($out, ['Avg / Transaction',  $stats->avgTrans]);
 
-        fputcsv($out, ['TOTAL', $summary->total]);
-        fputcsv($out, []);
+            fclose($out);
+        }, $filename);
+    }
 
-        /* ================= PAYMENT ================= */
-        fputcsv($out, ['PAYMENT']);
-        fputcsv($out, ['Method', 'Qty', 'Amount', 'Percent']);
-
-        foreach ($payments as $p) {
-            fputcsv($out, [
-                $p->name,
-                $p->qty,
-                $p->amount,
-                round($p->percentage, 2) . '%'
-            ]);
-        }
-        fputcsv($out, []);
-
-        /* ================= DEPARTMENT ================= */
-        fputcsv($out, ['DEPARTMENT']);
-        fputcsv($out, ['Department', 'Qty', 'Sales', 'Percent']);
-
-        foreach ($departments as $d) {
-            fputcsv($out, [
-                $d->department,
-                $d->qty,
-                $d->price,
-                round($d->percent, 2) . '%'
-            ]);
+    private function writeCsvTable($out, string $title, array $headers, $rows, callable $mapper): void
+    {
+        fputcsv($out, [$title]);
+        fputcsv($out, $headers);
+        foreach ($rows as $row) {
+            fputcsv($out, $mapper($row));
         }
         fputcsv($out, []);
-
-        /* ================= CATEGORY ================= */
-        fputcsv($out, ['CATEGORY']);
-        fputcsv($out, ['Category', 'Qty', 'Sales', 'Percent']);
-
-        foreach ($categories as $c) {
-            fputcsv($out, [
-                $c->category,
-                $c->qty,
-                $c->price,
-                round($c->percent, 2) . '%'
-            ]);
-        }
-        fputcsv($out, []);
-
-        /* ================= PROFIT & LOSS ================= */
-        fputcsv($out, ['PROFIT & LOSS']);
-        fputcsv($out, ['Subtotal', $profit->subtotal]);
-        fputcsv($out, ['Discount', $profit->discount]);
-        fputcsv($out, ['Net Sales', $profit->netSales]);
-        fputcsv($out, ['Total Cost', $profit->totalCost]);
-        fputcsv($out, ['Cost %', round($profit->costPercent, 2) . '%']);
-        fputcsv($out, ['Profit', $profit->profit]);
-        fputcsv($out, []);
-
-        /* ================= VISITOR STAT ================= */
-        fputcsv($out, ['VISITOR STATISTIC']);
-        fputcsv($out, ['Total Sales', $stats->ttl]);
-        fputcsv($out, ['Total Guest', $stats->guest]);
-        fputcsv($out, ['Avg / Guest', $stats->avgGuest]);
-        fputcsv($out, ['Transactions', $stats->trans]);
-        fputcsv($out, ['Avg / Transaction', $stats->avgTrans]);
-        fputcsv($out, []);
-
-        /* ================= VOID ================= */
-        fputcsv($out, ['VOID']);
-        fputcsv($out, ['Reason', 'Qty', 'Amount']);
-
-        foreach ($voids as $v) {
-            fputcsv($out, [
-                $v->description,
-                $v->qty,
-                $v->price
-            ]);
-        }
-
-        fclose($out);
-    },  $filename );
-}
+    }
 
     /* ===================== HELPERS ===================== */
 
@@ -298,5 +249,17 @@ private function visitorStats($from, $to)
             SUM(total) / NULLIF(COUNT(*),0) avgTrans
         ')
         ->first();
+}
+
+private function noSalesSummary($from, $to)
+{
+    return DB::connection('reports_mysql')->table('v_nosales')
+        ->whereBetween('date', [$from, $to])
+        ->where('nosales', true)
+        ->selectRaw('COUNT(*) AS qty, name, SUM(amount) AS amount')
+        ->groupBy('name')
+        ->havingRaw('SUM(amount) <> 0')
+        ->orderBy('name')
+        ->get();
 }
 }

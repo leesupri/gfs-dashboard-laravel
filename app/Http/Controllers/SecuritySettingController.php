@@ -35,6 +35,8 @@ class SecuritySettingController extends Controller
         'reports.wasteSummary' => 'Waste Summary Report',
         'settings.staff' => 'Staff Settings',
         'settings.security' => 'Security Settings',
+        'settings.pageLog' => 'Page Activity Log',
+        'log-viewer.index' => 'Log Viewer',
     ];
 
     public function index(Request $request)

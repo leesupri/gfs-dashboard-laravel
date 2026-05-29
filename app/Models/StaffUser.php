@@ -34,6 +34,15 @@ class StaffUser extends Model
             return false;
         }
 
+        // Use the in-memory collection when permissions are already eager-loaded
+        // (StaffAuth middleware loads them once per request), avoiding N+1 queries.
+        if ($this->relationLoaded('permissions')) {
+            return $this->permissions
+                ->where('route_name', $routeName)
+                ->where('can_view', true)
+                ->isNotEmpty();
+        }
+
         return $this->permissions()
             ->where('route_name', $routeName)
             ->where('can_view', true)

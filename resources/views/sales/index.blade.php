@@ -462,6 +462,7 @@
                           <p class="text-sm font-medium" style="color:var(--text-primary)" x-text="it.description"></p>
                           <p class="mt-0.5 text-xs" style="color:var(--text-muted)"
                             x-text="(it.department || '') + (it.category ? ' • ' + it.category : '')"></p>
+                            <span class="text-xs" style="color:var(--text-secondary)" x-text="m.description"></span>
                           <template x-if="Number(it.discountAmount || 0) > 0">
                             <p class="mt-0.5 text-xs text-red-600">Disc: <span x-text="idr(it.discountAmount)"></span></p>
                           </template>

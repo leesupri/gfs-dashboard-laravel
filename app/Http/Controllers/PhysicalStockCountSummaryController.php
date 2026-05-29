@@ -75,23 +75,42 @@ class PhysicalStockCountSummaryController extends Controller
             ->orderBy('warehouse')
             ->orderBy('category')
             ->orderBy('item_name')
+            ->limit(2000)
             ->get();
 
-        $groupedRows = $rows->groupBy('warehouse')->map(function ($warehouseItems, $warehouseName) {
-            $categoryGroups = $warehouseItems->groupBy('category')->map(function ($categoryItems, $categoryName) {
-                return [
-                    'category' => $categoryName,
-                    'items' => $categoryItems,
-                    'subtotal_diff_cost' => $categoryItems->sum(fn ($row) => (float) $row->diff_cost),
-                ];
-            })->values();
+        $truncated = $rows->count() >= 2000;
 
-            return [
-                'warehouse' => $warehouseName,
-                'categories' => $categoryGroups,
-                'subtotal_diff_cost' => $warehouseItems->sum(fn ($row) => (float) $row->diff_cost),
-            ];
-        })->values();
+        // Build nested structure using plain arrays to minimise Collection overhead
+        $groupedRows = [];
+        foreach ($rows as $row) {
+            $wKey = $row->warehouse;
+            $cKey = $row->category;
+
+            if (!isset($groupedRows[$wKey])) {
+                $groupedRows[$wKey] = [
+                    'warehouse'         => $wKey,
+                    'categories'        => [],
+                    'subtotal_diff_cost'=> 0.0,
+                ];
+            }
+            if (!isset($groupedRows[$wKey]['categories'][$cKey])) {
+                $groupedRows[$wKey]['categories'][$cKey] = [
+                    'category'          => $cKey,
+                    'items'             => [],
+                    'subtotal_diff_cost'=> 0.0,
+                ];
+            }
+
+            $groupedRows[$wKey]['categories'][$cKey]['items'][]              = $row;
+            $groupedRows[$wKey]['categories'][$cKey]['subtotal_diff_cost']  += (float) $row->diff_cost;
+            $groupedRows[$wKey]['subtotal_diff_cost']                       += (float) $row->diff_cost;
+        }
+
+        // Re-index to sequential arrays
+        foreach ($groupedRows as &$wg) {
+            $wg['categories'] = array_values($wg['categories']);
+        }
+        $groupedRows = array_values($groupedRows);
 
         $summary = (clone $baseQuery)
             ->selectRaw("
@@ -101,10 +120,11 @@ class PhysicalStockCountSummaryController extends Controller
             ->first();
 
         return view('reports.physical-stock-count-summary', [
-            'title' => 'Physical Stock Count Summary Group By Warehouse',
-            'groupedRows' => $groupedRows,
-            'start' => $start,
-            'end' => $end,
+            'title'      => 'Physical Stock Count Summary Group By Warehouse',
+            'groupedRows'=> $groupedRows,
+            'truncated'  => $truncated,
+            'start'      => $start,
+            'end'        => $end,
             'warehouse' => $warehouse,
             'category' => $category,
             'q' => $q,

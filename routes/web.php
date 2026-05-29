@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserPageLogController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SalesController;
@@ -30,7 +31,7 @@ use App\Http\Controllers\StaffSettingController;
 use App\Http\Controllers\SecuritySettingController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['staff.auth', 'route.permission'])->group(function () {
@@ -94,7 +95,15 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
 
 Route::middleware(['staff.auth'])->group(function () {
     Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
+    // Change-password is self-service — every authenticated user can change their own
     Route::get('/settings/change-password', [AuthController::class, 'showChangePassword'])->name('settings.changePassword');
-    Route::post('/settings/change-password', [AuthController::class, 'changePassword'])->name('settings.changePassword.update');
+    Route::post('/settings/change-password', [AuthController::class, 'changePassword'])
+        ->middleware('throttle:10,1')   // prevent brute-forcing current password
+        ->name('settings.changePassword.update');
+});
+
+// Page activity log requires an explicit permission grant (admin-level data)
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/settings/page-logs', [UserPageLogController::class, 'index'])->name('settings.pageLog');
 });
 

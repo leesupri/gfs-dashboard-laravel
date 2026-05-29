@@ -57,7 +57,7 @@ class StaffSettingController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:staff_users,username'],
             'title' => ['nullable', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -85,7 +85,7 @@ class StaffSettingController extends Controller
                 Rule::unique('staff_users', 'username')->ignore($staffUser->id),
             ],
             'title' => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 

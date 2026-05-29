@@ -52,7 +52,7 @@ public function changePassword(Request $request)
 {
     $validated = $request->validate([
         'current_password' => ['required', 'string'],
-        'password' => ['required', 'string', 'min:6', 'confirmed'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
     ]);
 
     $staffUser = \App\Models\StaffUser::findOrFail(session('staff_user_id'));
