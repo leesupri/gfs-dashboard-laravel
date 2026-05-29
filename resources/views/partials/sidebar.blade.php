@@ -22,6 +22,7 @@
     ['label' => 'Physical Stock Count', 'href' => route('reports.physicalStockCountSummary'), 'key' => 'reports.physicalStockCountSummary', 'icon' => 'archive'],
     ['label' => 'Transfer Detail', 'href' => route('reports.transferDetail'), 'key' => 'reports.transferDetail', 'icon' => 'repeat'],
     ['label' => 'Waste Summary', 'href' => route('reports.wasteSummary'), 'key' => 'reports.wasteSummary', 'icon' => 'trash'],
+    ['label' => 'Sales Forecast', 'href' => route('reports.salesForecast'), 'key' => 'reports.salesForecast', 'icon' => 'trend'],
   ];
 
   $routeName = request()->route()?->getName() ?? '';

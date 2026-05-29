@@ -23,6 +23,7 @@ use App\Http\Controllers\PurchaseDetailController;
 use App\Http\Controllers\PurchaseDetailPartnerController;
 use App\Http\Controllers\PhysicalStockCountSummaryController;
 use App\Http\Controllers\TransferDetailController;
+use App\Http\Controllers\SalesForecastController;
 use App\Http\Controllers\WasteSummaryController;
 
 
@@ -80,6 +81,7 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/reports/physical-stock-count-summary', [PhysicalStockCountSummaryController::class, 'index'])->name('reports.physicalStockCountSummary');
     Route::get('/reports/transfer-detail', [TransferDetailController::class, 'index'])->name('reports.transferDetail');
     Route::get('/reports/waste-summary', [WasteSummaryController::class, 'index'])->name('reports.wasteSummary');
+    Route::get('/reports/sales-forecast', [SalesForecastController::class, 'index'])->name('reports.salesForecast');
     Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
     Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
     

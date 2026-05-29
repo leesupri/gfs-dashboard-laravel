@@ -33,6 +33,7 @@ class SecuritySettingController extends Controller
         'reports.physicalStockCountSummary' => 'Physical Stock Count Summary',
         'reports.transferDetail' => 'Transfer Detail',
         'reports.wasteSummary' => 'Waste Summary Report',
+        'reports.salesForecast' => 'Sales Forecast',
         'settings.staff' => 'Staff Settings',
         'settings.security' => 'Security Settings',
         'settings.pageLog' => 'Page Activity Log',
