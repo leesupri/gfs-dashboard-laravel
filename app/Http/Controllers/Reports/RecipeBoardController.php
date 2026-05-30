@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Helpers\ExcelExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -139,67 +140,50 @@ class RecipeBoardController extends Controller
 
         $rows     = $this->buildQuery($q, $sales, $purchased, $stocked, $active, $category, $hasConversi)->get();
         $byRecipe = $rows->groupBy('recipeId')->sortBy('recipeName');
-        $fileName = 'recipe_board_' . now()->format('Ymd_His') . '.csv';
 
-        return response()->streamDownload(function () use ($byRecipe) {
-            $out = fopen('php://output', 'w');
+        $headers = [
+            'Recipe ID', 'Recipe Name', 'Category', 'Active', 'Sales', 'Purchased', 'Stocked',
+            'Production', 'Production UOM', 'Idx',
+            'Item Code', 'Item Name', 'Item Active', 'Is Conversi',
+            'Recipe Qty', 'Recipe UOM', 'Inv Qty', 'Inv UOM',
+        ];
 
-            fwrite($out, "\xEF\xBB\xBF");
+        $dataRows = [];
+        foreach ($byRecipe as $items) {
+            $first = $items->first();
+            foreach ($items as $r) {
+                $isConversi = ($r->itemStocked === 'yes' && $r->itemSales === 'no' && $r->itemPurchased === 'no')
+                    ? 'yes' : 'no';
 
-            fputcsv($out, [
-                'Recipe ID',
-                'Recipe Name',
-                'Category',
-                'Active',
-                'Sales',
-                'Purchased',
-                'Stocked',
-                'Production',
-                'Production UOM',
-                'Idx',
-                'Item Code',
-                'Item Name',
-                'Item Active',
-                'Is Conversi',
-                'Recipe Qty',
-                'Recipe UOM',
-                'Inv Qty',
-                'Inv UOM',
-            ]);
-
-            foreach ($byRecipe as $items) {
-                $first = $items->first();
-
-                foreach ($items as $r) {
-                    $isConversi = ($r->itemStocked === 'yes' && $r->itemSales === 'no' && $r->itemPurchased === 'no')
-                        ? 'yes'
-                        : 'no';
-
-                    fputcsv($out, [
-                        $r->recipeId,
-                        $r->recipeName,
-                        $r->categoryName ?? '',
-                        $r->isActive,
-                        $r->sales,
-                        $r->purchased,
-                        $r->stocked,
-                        number_format((float) $first->production, 2, '.', ''),
-                        $first->uom,
-                        $r->idx,
-                        $r->itemCode,
-                        $r->itemName,
-                        $r->itemActive,
-                        $isConversi,
-                        number_format((float) $r->RecQty, 2, '.', ''),
-                        $r->recipeUom,
-                        number_format((float) $r->InvQty, 2, '.', ''),
-                        $r->InvUom,
-                    ]);
-                }
+                $dataRows[] = [
+                    $r->recipeId,
+                    $r->recipeName,
+                    $r->categoryName ?? '',
+                    $r->isActive,
+                    $r->sales,
+                    $r->purchased,
+                    $r->stocked,
+                    (float) $first->production,
+                    $first->uom,
+                    $r->idx,
+                    $r->itemCode,
+                    $r->itemName,
+                    $r->itemActive,
+                    $isConversi,
+                    (float) $r->RecQty,
+                    $r->recipeUom,
+                    (float) $r->InvQty,
+                    $r->InvUom,
+                ];
             }
+        }
 
-            fclose($out);
-        }, $fileName);
+        return ExcelExport::download(
+            'recipe_board_' . now()->format('Ymd_His') . '.xlsx',
+            'Recipe Board',
+            $headers,
+            $dataRows
+        );
     }
 
     private function buildQuery(

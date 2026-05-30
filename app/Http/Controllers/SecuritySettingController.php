@@ -34,10 +34,16 @@ class SecuritySettingController extends Controller
         'reports.transferDetail' => 'Transfer Detail',
         'reports.wasteSummary' => 'Waste Summary Report',
         'reports.salesForecast' => 'Sales Forecast',
+        'reports.cashierShift'  => 'Cashier Shift Report',
+        'reports.openingDay'          => 'Opening Day Report',
+        'reports.noSalesReceiptDetail'=> 'No Sales Receipt Detail',
+        'reports.dailyCategory'       => 'Daily Category Sales',
+        'reports.dailyHour'           => 'Daily Hour Sales',
         'settings.staff' => 'Staff Settings',
         'settings.security' => 'Security Settings',
         'settings.pageLog' => 'Page Activity Log',
         'log-viewer.index' => 'Log Viewer',
+        'support.tickets.index' => 'Support Tickets',
     ];
 
     public function index(Request $request)

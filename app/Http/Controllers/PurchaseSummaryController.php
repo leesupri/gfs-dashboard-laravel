@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PurchaseSummaryController extends Controller
 {
@@ -46,7 +46,7 @@ class PurchaseSummaryController extends Controller
             ->groupBy('category', 'name', 'code', 'uom');
 
         if ($export === 'csv') {
-            return $this->exportCsv(clone $rowsQuery, $start, $end, $category, $q);
+            return $this->exportCsv(clone $rowsQuery);
         }
 
         $rows = (clone $rowsQuery)
@@ -74,50 +74,33 @@ class PurchaseSummaryController extends Controller
         ]);
     }
 
-    protected function exportCsv($rowsQuery, $start, $end, $category, $q): StreamedResponse
+    protected function exportCsv($rowsQuery)
     {
-        $filename = 'purchase-summary-' . now()->format('Ymd_His') . '.csv';
-
         $rows = $rowsQuery
             ->orderBy('category')
             ->orderBy('name')
             ->orderBy('code')
             ->get();
 
-        return response()->streamDownload(function () use ($rows, $start, $end, $category, $q) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        $headers = ['Category', 'Item Name', 'Item Code', 'Quantity', 'UOM', 'Total Cost'];
 
-            fputcsv($handle, ['Purchase Summary Report']);
-            fputcsv($handle, ['Start Date', $start]);
-            fputcsv($handle, ['End Date', $end]);
-            fputcsv($handle, ['Category Filter', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Search Filter', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
+        $dataRows = [];
+        foreach ($rows as $row) {
+            $dataRows[] = [
+                $row->category,
+                $row->name,
+                $row->code,
+                (float) $row->quantity,
+                $row->uom,
+                (float) $row->totalCost,
+            ];
+        }
 
-            fputcsv($handle, [
-                'Category',
-                'Item Name',
-                'Item Code',
-                'Quantity',
-                'UOM',
-                'Total Cost',
-            ]);
-
-            foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row->category,
-                    $row->name,
-                    $row->code,
-                    number_format((float) $row->quantity, 2, ',', '.'),
-                    $row->uom,
-                    number_format((float) $row->totalCost, 2, ',', '.'),
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return ExcelExport::download(
+            'purchase-summary-' . now()->format('Ymd_His') . '.xlsx',
+            'Purchase Summary Report',
+            $headers,
+            $dataRows
+        );
     }
 }

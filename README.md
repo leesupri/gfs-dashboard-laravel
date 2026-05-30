@@ -83,3 +83,7 @@ php artisan optimize:clear
 php artisan route:clear
 php artisan config:clear
 php artisan view:clear
+
+
+admin inside 
+check data from 6 to 10 pm ever 5mins daily for alert cost detect which item cost higher 90%

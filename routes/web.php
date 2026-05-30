@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CashierShiftController;
+use App\Http\Controllers\DailyCategoryController;
+use App\Http\Controllers\DailyHourController;
+use App\Http\Controllers\NoSalesReceiptDetailController;
+use App\Http\Controllers\OpeningDayController;
 use App\Http\Controllers\UserPageLogController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\DashboardController;
@@ -30,6 +35,14 @@ use App\Http\Controllers\WasteSummaryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StaffSettingController;
 use App\Http\Controllers\SecuritySettingController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketManagementController;
+
+// ── Public ticket routes (no auth required) ──────────────────────────────────
+Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
+Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+Route::get('/tickets/status', [TicketController::class, 'status'])->name('tickets.status');
+Route::post('/tickets/status', [TicketController::class, 'statusCheck'])->name('tickets.statusCheck');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
@@ -82,6 +95,11 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/reports/transfer-detail', [TransferDetailController::class, 'index'])->name('reports.transferDetail');
     Route::get('/reports/waste-summary', [WasteSummaryController::class, 'index'])->name('reports.wasteSummary');
     Route::get('/reports/sales-forecast', [SalesForecastController::class, 'index'])->name('reports.salesForecast');
+    Route::get('/reports/cashier-shift', [CashierShiftController::class, 'index'])->name('reports.cashierShift');
+    Route::get('/reports/opening-day', [OpeningDayController::class, 'index'])->name('reports.openingDay');
+    Route::get('/reports/no-sales-receipt-detail', [NoSalesReceiptDetailController::class, 'index'])->name('reports.noSalesReceiptDetail');
+    Route::get('/reports/daily-category', [DailyCategoryController::class, 'index'])->name('reports.dailyCategory');
+    Route::get('/reports/daily-hour',     [DailyHourController::class,     'index'])->name('reports.dailyHour');
     Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
     Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
     
@@ -107,5 +125,14 @@ Route::middleware(['staff.auth'])->group(function () {
 // Page activity log requires an explicit permission grant (admin-level data)
 Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/settings/page-logs', [UserPageLogController::class, 'index'])->name('settings.pageLog');
+});
+
+// ── Staff helpdesk / ticket management ───────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/support/tickets', [TicketManagementController::class, 'index'])->name('support.tickets.index');
+    Route::get('/support/tickets/{ticket}', [TicketManagementController::class, 'show'])->name('support.tickets.show');
+    Route::post('/support/tickets/{ticket}/reply', [TicketManagementController::class, 'reply'])->name('support.tickets.reply');
+    Route::patch('/support/tickets/{ticket}/status', [TicketManagementController::class, 'updateStatus'])->name('support.tickets.updateStatus');
+    Route::patch('/support/tickets/{ticket}/assign', [TicketManagementController::class, 'assign'])->name('support.tickets.assign');
 });
 

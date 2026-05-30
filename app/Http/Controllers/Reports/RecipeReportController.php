@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Helpers\ExcelExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,88 +38,64 @@ class RecipeReportController extends Controller
     }
 
     public function export(Request $request)
-{
-    $q = trim((string) $request->query('q', ''));
-    $sales = trim((string) $request->query('sales', ''));
-    $purchased = trim((string) $request->query('purchased', ''));
-    $stocked = trim((string) $request->query('stocked', ''));
-    $hideZero = (string) $request->query('hide_zero', '0') === '1';
+    {
+        $q        = trim((string) $request->query('q', ''));
+        $sales    = trim((string) $request->query('sales', ''));
+        $purchased = trim((string) $request->query('purchased', ''));
+        $stocked  = trim((string) $request->query('stocked', ''));
+        $hideZero = (string) $request->query('hide_zero', '0') === '1';
 
-    $rows = $this->buildQuery($q, $sales, $purchased, $stocked, $hideZero)->get();
+        $rows     = $this->buildQuery($q, $sales, $purchased, $stocked, $hideZero)->get();
+        $byRecipe = $rows->groupBy('recipeName');
 
-    $byRecipe = $rows->groupBy('recipeName');
+        $headers = [
+            'Recipe ID', 'Recipe Name', 'Production', 'UOM',
+            'Expected Total', 'Actual Total', 'Expected / Unit', 'Actual / Unit',
+            'Item Code', 'Item Name', 'Rec Qty', 'Recipe UOM', 'Inv Qty', 'Inv UOM',
+            'Unit Cost', 'Avg Cost', 'Expected', 'Actual', 'Idx',
+        ];
 
-    $fileName = 'recipe_report_' . now()->format('Ymd_His') . '.csv';
-
-    return response()->streamDownload(function () use ($byRecipe) {
-        $out = fopen('php://output', 'w');
-
-        // HEADER
-        fputcsv($out, [
-            'Recipe ID',
-            'Recipe Name',
-            'Production',
-            'UOM',
-            'Expected Total',
-            'Actual Total',
-            'Expected / Unit',
-            'Actual / Unit',
-            'Item Code',
-            'Item Name',
-            'Rec Qty',
-            'Recipe UOM',
-            'Inv Qty',
-            'Inv UOM',
-            'Unit Cost',
-            'Avg Cost',
-            'Expected',
-            'Actual',
-            'Idx',
-        ]);
-
+        $dataRows = [];
         foreach ($byRecipe as $recipeName => $items) {
-            $first = $items->first();
-
-            $expectedTotal = $items->sum('expectedTotal');
-            $actualTotal   = $items->sum('actualTotal');
-
-            $production = (float) $first->production ?: 0;
-
+            $first          = $items->first();
+            $expectedTotal  = $items->sum('expectedTotal');
+            $actualTotal    = $items->sum('actualTotal');
+            $production     = (float) $first->production ?: 0;
             $expectedPerUnit = $production > 0 ? $expectedTotal / $production : 0;
             $actualPerUnit   = $production > 0 ? $actualTotal / $production : 0;
 
             foreach ($items as $r) {
-                fputcsv($out, [
+                $dataRows[] = [
                     $r->recipeId,
                     $recipeName,
-                    number_format((float) $first->production, 2, '.', ''),
+                    (float) $first->production,
                     $first->uom,
-
-                    // recipe totals
-                    number_format((float) $expectedTotal, 2, '.', ''),
-                    number_format((float) $actualTotal, 2, '.', ''),
-                    number_format((float) $expectedPerUnit, 2, '.', ''),
-                    number_format((float) $actualPerUnit, 2, '.', ''),
-
-                    // item details
+                    (float) $expectedTotal,
+                    (float) $actualTotal,
+                    (float) $expectedPerUnit,
+                    (float) $actualPerUnit,
                     $r->itemCode,
                     $r->itemName,
-                    number_format((float) $r->RecQty, 2, '.', ''),
+                    (float) $r->RecQty,
                     $r->recipeUom,
-                    number_format((float) $r->InvQty, 2, '.', ''),
+                    (float) $r->InvQty,
                     $r->InvUom,
-                    number_format((float) $r->unitCost, 2, '.', ''),
-                    number_format((float) $r->averageCost, 2, '.', ''),
-                    number_format((float) $r->expectedTotal, 2, '.', ''),
-                    number_format((float) $r->actualTotal, 2, '.', ''),
+                    (float) $r->unitCost,
+                    (float) $r->averageCost,
+                    (float) $r->expectedTotal,
+                    (float) $r->actualTotal,
                     $r->idx,
-                ]);
+                ];
             }
         }
 
-        fclose($out);
-    }, $fileName);
-}
+        return ExcelExport::download(
+            'recipe_report_' . now()->format('Ymd_His') . '.xlsx',
+            'Recipe Report',
+            $headers,
+            $dataRows
+        );
+    }
 
     private function buildQuery(string $q, string $sales, string $purchased, string $stocked, bool $hideZero)
     {

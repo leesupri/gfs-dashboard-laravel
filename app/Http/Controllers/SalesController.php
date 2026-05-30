@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesController extends Controller
 {
@@ -321,24 +321,22 @@ foreach ($paymentBreakdownRows as $r) {
 }
 
     /* =========================
-     *  CSV EXPORT (2 DECIMAL)
+     *  EXCEL EXPORT
      * ========================= */
     public function export(Request $request)
-{
-    $base = $this->buildSalesQuery($request);
+    {
+        $base = $this->buildSalesQuery($request);
 
-    return response()->streamDownload(function () use ($base) {
-        $out = fopen('php://output', 'w');
+        $headers = [
+            'Invoice ID', 'Date', 'Closed Time', 'Table', 'Cashier',
+            'Payment Bucket', 'Payment Method',
+            'Subtotal', 'Discount', 'Service', 'Tax', 'Total',
+            'Paid Total', 'Diff',
+        ];
 
-        fputcsv($out, [
-            'invoice_id','date','closedTime','table','cashier',
-            'payment_bucket','payment_method',
-            'subtotal','discount','service','tax','total',
-            'paid_total','diff'
-        ]);
-
+        $dataRows = [];
         foreach ($base->cursor() as $r) {
-            fputcsv($out, [
+            $dataRows[] = [
                 $r->invoice_id,
                 $r->date,
                 $r->closedTime,
@@ -346,19 +344,23 @@ foreach ($paymentBreakdownRows as $r) {
                 $r->cashierName,
                 $r->paymentBucket,
                 $r->paymentMethod,
-                number_format((float)$r->subtotal, 2, '.', ''),
-                number_format((float)$r->discountAmount, 2, '.', ''),
-                number_format((float)$r->serviceChargeAmount, 2, '.', ''),
-                number_format((float)$r->taxAmount, 2, '.', ''),
-                number_format((float)$r->total, 2, '.', ''),
-                number_format((float)$r->paid_total, 2, '.', ''),
-                number_format((float)$r->paid_total - (float)$r->total, 2, '.', ''),
-            ]);
+                (float) $r->subtotal,
+                (float) $r->discountAmount,
+                (float) $r->serviceChargeAmount,
+                (float) $r->taxAmount,
+                (float) $r->total,
+                (float) $r->paid_total,
+                (float) $r->paid_total - (float) $r->total,
+            ];
         }
 
-        fclose($out);
-    }, 'sales_transactions_' . date('Ymd_His') . '.csv');
-}
+        return ExcelExport::download(
+            'sales_transactions_' . date('Ymd_His') . '.xlsx',
+            'Sales Transactions',
+            $headers,
+            $dataRows
+        );
+    }
 
 /* =========================
  *  BASE QUERY FOR EXPORT

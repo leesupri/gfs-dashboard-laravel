@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Carbon\Carbon;
 
 class SummarySalesController extends Controller
@@ -32,8 +32,8 @@ class SummarySalesController extends Controller
         ]);
     }
 
-    /* ===================== CSV EXPORT ===================== */
-    public function exportCsv(Request $request): StreamedResponse
+    /* ===================== EXCEL EXPORT ===================== */
+    public function exportCsv(Request $request)
     {
         [$from, $to] = $this->dateRange($request);
 
@@ -45,68 +45,81 @@ class SummarySalesController extends Controller
         $stats       = $this->visitorStats($from, $to);
         $voids       = $this->voidSummary($from, $to);
         $noSales     = $this->noSalesSummary($from, $to);
-        $filename    = 'summary_sales_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.csv';
 
-        return response()->streamDownload(function () use (
-            $summary, $payments, $departments, $categories,
-            $profit, $stats, $voids, $noSales
-        ) {
-            $out = fopen('php://output', 'w');
-            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        // Build SUMMARY SALES section as key-value rows
+        $summaryRows = [
+            ['Subtotal',  $summary->subtotal],
+            ['Discount',  $summary->discount],
+            ['Net Sales', $summary->subtotal - $summary->discount],
+        ];
+        if ($summary->service > 0)   { $summaryRows[] = ['Service Charge', $summary->service]; }
+        if ($summary->tax > 0)       { $summaryRows[] = ['Tax',            $summary->tax]; }
+        if ($summary->rounding != 0) { $summaryRows[] = ['Rounding',       $summary->rounding]; }
+        $summaryRows[] = ['TOTAL', $summary->total];
 
-            // Summary header rows
-            fputcsv($out, ['SUMMARY SALES']);
-            fputcsv($out, ['Subtotal',  $summary->subtotal]);
-            fputcsv($out, ['Discount',  $summary->discount]);
-            fputcsv($out, ['Net Sales', $summary->subtotal - $summary->discount]);
-            if ($summary->service > 0)   { fputcsv($out, ['Service Charge', $summary->service]);  }
-            if ($summary->tax > 0)       { fputcsv($out, ['Tax',            $summary->tax]);       }
-            if ($summary->rounding != 0) { fputcsv($out, ['Rounding',       $summary->rounding]);  }
-            fputcsv($out, ['TOTAL', $summary->total]);
-            fputcsv($out, []);
+        // PAYMENT rows
+        $paymentRows = $payments->map(fn ($p) => [
+            $p->name, $p->qty, $p->amount, round($p->percentage, 2) . '%',
+        ])->values()->toArray();
 
-            // Tabular sections
-            $this->writeCsvTable($out, 'PAYMENT',    ['Method',     'Qty', 'Amount', 'Percent'], $payments,    fn($p) => [$p->name,        $p->qty, $p->amount, round($p->percentage, 2).'%']);
-            $this->writeCsvTable($out, 'DEPARTMENT', ['Department', 'Qty', 'Sales',  'Percent'], $departments, fn($d) => [$d->department,   $d->qty, $d->price,  round($d->percent,     2).'%']);
-            $this->writeCsvTable($out, 'CATEGORY',   ['Category',   'Qty', 'Sales',  'Percent'], $categories,  fn($c) => [$c->category,     $c->qty, $c->price,  round($c->percent,     2).'%']);
-            $this->writeCsvTable($out, 'VOID',       ['Reason',     'Qty', 'Amount'            ], $voids,      fn($v) => [$v->description,  $v->qty, $v->price]);
-            $this->writeCsvTable($out, 'NO SALES',   ['Cashier',    'Count', 'Amount'          ], $noSales,    fn($n) => [$n->name,         $n->qty, $n->amount]);
+        // DEPARTMENT rows
+        $deptRows = $departments->map(fn ($d) => [
+            $d->department, $d->qty, $d->price, round($d->percent, 2) . '%',
+        ])->values()->toArray();
 
-            if ($noSales->isNotEmpty()) {
-                fputcsv($out, ['Total', $noSales->sum('qty'), $noSales->sum('amount')]);
-            }
+        // CATEGORY rows
+        $catRows = $categories->map(fn ($c) => [
+            $c->category, $c->qty, $c->price, round($c->percent, 2) . '%',
+        ])->values()->toArray();
 
-            // Profit & Loss
-            fputcsv($out, []);
-            fputcsv($out, ['PROFIT & LOSS']);
-            fputcsv($out, ['Subtotal',   $profit->subtotal]);
-            fputcsv($out, ['Discount',   $profit->discount]);
-            fputcsv($out, ['Net Sales',  $profit->netSales]);
-            fputcsv($out, ['Total Cost', $profit->totalCost]);
-            fputcsv($out, ['Cost %',     round($profit->costPercent, 2).'%']);
-            fputcsv($out, ['Profit',     $profit->profit]);
-            fputcsv($out, []);
+        // VOID rows
+        $voidRows = $voids->map(fn ($v) => [
+            $v->description, $v->qty, $v->price,
+        ])->values()->toArray();
 
-            // Visitor statistics
-            fputcsv($out, ['VISITOR STATISTIC']);
-            fputcsv($out, ['Total Sales',       $stats->ttl]);
-            fputcsv($out, ['Total Guest',        $stats->guest]);
-            fputcsv($out, ['Avg / Guest',        $stats->avgGuest]);
-            fputcsv($out, ['Transactions',       $stats->trans]);
-            fputcsv($out, ['Avg / Transaction',  $stats->avgTrans]);
-
-            fclose($out);
-        }, $filename);
-    }
-
-    private function writeCsvTable($out, string $title, array $headers, $rows, callable $mapper): void
-    {
-        fputcsv($out, [$title]);
-        fputcsv($out, $headers);
-        foreach ($rows as $row) {
-            fputcsv($out, $mapper($row));
+        // NO SALES rows
+        $noSalesRows = $noSales->map(fn ($n) => [
+            $n->name, $n->qty, $n->amount,
+        ])->values()->toArray();
+        if ($noSales->isNotEmpty()) {
+            $noSalesRows[] = ['Total', $noSales->sum('qty'), $noSales->sum('amount')];
         }
-        fputcsv($out, []);
+
+        // PROFIT & LOSS rows
+        $profitRows = [
+            ['Subtotal',   $profit->subtotal],
+            ['Discount',   $profit->discount],
+            ['Net Sales',  $profit->netSales],
+            ['Total Cost', $profit->totalCost],
+            ['Cost %',     round($profit->costPercent, 2) . '%'],
+            ['Profit',     $profit->profit],
+        ];
+
+        // VISITOR STATISTIC rows
+        $statsRows = [
+            ['Total Sales',      $stats->ttl],
+            ['Total Guest',      $stats->guest],
+            ['Avg / Guest',      $stats->avgGuest],
+            ['Transactions',     $stats->trans],
+            ['Avg / Transaction',$stats->avgTrans],
+        ];
+
+        $sections = [
+            ['heading' => 'SUMMARY SALES',    'headers' => ['Item', 'Value'],                    'rows' => $summaryRows],
+            ['heading' => 'PAYMENT',          'headers' => ['Method', 'Qty', 'Amount', 'Percent'], 'rows' => $paymentRows],
+            ['heading' => 'DEPARTMENT',       'headers' => ['Department', 'Qty', 'Sales', 'Percent'], 'rows' => $deptRows],
+            ['heading' => 'CATEGORY',         'headers' => ['Category', 'Qty', 'Sales', 'Percent'],   'rows' => $catRows],
+            ['heading' => 'VOID',             'headers' => ['Reason', 'Qty', 'Amount'],           'rows' => $voidRows],
+            ['heading' => 'NO SALES',         'headers' => ['Cashier', 'Count', 'Amount'],        'rows' => $noSalesRows],
+            ['heading' => 'PROFIT & LOSS',    'headers' => ['Item', 'Value'],                    'rows' => $profitRows],
+            ['heading' => 'VISITOR STATISTIC','headers' => ['Item', 'Value'],                    'rows' => $statsRows],
+        ];
+
+        return ExcelExport::downloadMultiSection(
+            'summary_sales_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.xlsx',
+            'Summary Sales',
+            $sections
+        );
     }
 
     /* ===================== HELPERS ===================== */

@@ -115,4 +115,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    | Support inbox that receives a CC of every new ticket submission.
+    | Set SUPPORT_NOTIFY_EMAIL in .env to a team inbox address.
+    */
+    'support_notify_email' => env('SUPPORT_NOTIFY_EMAIL'),
+
 ];

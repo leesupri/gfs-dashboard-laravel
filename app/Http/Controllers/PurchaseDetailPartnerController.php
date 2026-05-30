@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PurchaseDetailPartnerController extends Controller
 {
@@ -72,7 +72,7 @@ class PurchaseDetailPartnerController extends Controller
 
         if ($export === 'csv') {
             $rows = (clone $selectQuery)->get();
-            return $this->exportGroupedCsv($rows, $start, $end, $category, $partner, $q);
+            return $this->exportGroupedCsv($rows);
         }
 
         $rows = (clone $selectQuery)->get();
@@ -106,111 +106,51 @@ class PurchaseDetailPartnerController extends Controller
         ]);
     }
 
-    private function exportGroupedCsv($rows, $start, $end, $category, $partner, $q): StreamedResponse
+    private function exportGroupedCsv($rows)
     {
-        $filename = 'purchase-detail-group-by-partner-' . now()->format('Ymd_His') . '.csv';
+        $groupedRows = $rows->groupBy(fn ($row) => $row->Partner ?: 'No Partner');
+        $grandTotal  = $rows->sum(fn ($row) => (float) $row->total);
 
-        $groupedRows = $rows->groupBy(function ($row) {
-            return $row->Partner ?: 'No Partner';
-        });
+        $headers = [
+            'Partner', 'Category', 'Item Name', 'Item Code', 'GR No.', 'Date',
+            'Purc. Qty', 'Purc. UOM', 'Conversion', 'Quantity', 'UOM',
+            'Unit Cost', 'Total', 'Warehouse', 'Created By',
+        ];
 
-        $grandTotal = $rows->sum(fn ($row) => (float) $row->total);
-
-        return response()->streamDownload(function () use ($groupedRows, $grandTotal, $start, $end, $category, $partner, $q) {
-            $handle = fopen('php://output', 'w');
-
-            // UTF-8 BOM for Excel
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, ['Purchase Detail Report Group By Partner']);
-            fputcsv($handle, ['Start Date', $start]);
-            fputcsv($handle, ['End Date', $end]);
-            fputcsv($handle, ['Category Filter', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Partner Filter', $partner !== '' ? $partner : 'All']);
-            fputcsv($handle, ['Search Filter', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
-
-            foreach ($groupedRows as $partnerName => $items) {
-                fputcsv($handle, [$partnerName]);
-
-                fputcsv($handle, [
-                    'Category',
-                    'Item Name',
-                    'Item Code',
-                    'GR No.',
-                    'Date',
-                    'Purc. Qty',
-                    'Purc. UOM',
-                    'Conversion',
-                    'Quantity',
-                    'UOM',
-                    'Unit Cost',
-                    'Total',
-                    'Warehouse',
-                    'CreateBy',
-                ]);
-
-                foreach ($items as $row) {
-                    fputcsv($handle, [
-                        $row->Category,
-                        $row->ItemName,
-                        $row->ItemCode,
-                        $row->id,
-                        $row->date ? Carbon::parse($row->date)->format('d/m/Y') : '',
-                        (float) $row->purchaseQuantity,
-                        $row->purchaseUom,
-                        (float) $row->purchaseConversion,
-                        (float) $row->quantity,
-                        $row->uom,
-                        (float) $row->unitCost,
-                        (float) $row->total,
-                        $row->Warehouse,
-                        $row->CreateBy,
-                    ]);
-                }
-
-                $partnerSubtotal = $items->sum(fn ($row) => (float) $row->total);
-
-                fputcsv($handle, [
-                    'TOTAL',
+        $dataRows = [];
+        foreach ($groupedRows as $partnerName => $items) {
+            foreach ($items as $row) {
+                $dataRows[] = [
                     $partnerName,
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    (float) $partnerSubtotal,
-                    '',
-                    '',
-                ]);
-
-                fputcsv($handle, []);
+                    $row->Category,
+                    $row->ItemName,
+                    $row->ItemCode,
+                    $row->id,
+                    $row->date ? Carbon::parse($row->date)->format('d/m/Y') : '',
+                    (float) $row->purchaseQuantity,
+                    $row->purchaseUom,
+                    (float) $row->purchaseConversion,
+                    (float) $row->quantity,
+                    $row->uom,
+                    (float) $row->unitCost,
+                    (float) $row->total,
+                    $row->Warehouse,
+                    $row->CreateBy,
+                ];
             }
 
-            fputcsv($handle, [
-                'GRAND TOTAL',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                (float) $grandTotal,
-                '',
-                '',
-            ]);
+            $partnerSubtotal = $items->sum(fn ($row) => (float) $row->total);
+            $dataRows[] = ['TOTAL ' . $partnerName, '', '', '', '', '', '', '', '', '', '', '', (float) $partnerSubtotal, '', ''];
+            $dataRows[] = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+        }
 
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        $dataRows[] = ['GRAND TOTAL', '', '', '', '', '', '', '', '', '', '', '', (float) $grandTotal, '', ''];
+
+        return ExcelExport::download(
+            'purchase-detail-group-by-partner-' . now()->format('Ymd_His') . '.xlsx',
+            'Purchase Detail Report Group By Partner',
+            $headers,
+            $dataRows
+        );
     }
 }

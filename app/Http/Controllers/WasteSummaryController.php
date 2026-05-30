@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class WasteSummaryController extends Controller
         $grandTotal = $rows->sum('total');
 
         if ($export === 'csv') {
-            return $this->exportCsv($rows, $start, $end);
+            return $this->exportCsv($rows);
         }
 
         return view('reports.waste-summary', [
@@ -58,44 +59,28 @@ class WasteSummaryController extends Controller
         ]);
     }
 
-    private function exportCsv($rows, $start, $end)
+    private function exportCsv($rows)
     {
-        $filename = 'waste-summary-' . now()->format('Ymd_His') . '.csv';
+        $headers = ['Category', 'Item Name', 'Code', 'Quantity', 'UOM', 'Unit Cost', 'Total'];
 
-        return response()->streamDownload(function () use ($rows, $start, $end) {
-            $handle = fopen('php://output', 'w');
+        $dataRows = [];
+        foreach ($rows as $row) {
+            $dataRows[] = [
+                $row->category,
+                $row->name,
+                $row->code,
+                (float) $row->quantity,
+                $row->uom,
+                (float) $row->unitCost,
+                (float) $row->total,
+            ];
+        }
 
-            // Excel UTF-8 fix
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, ['Waste Summary Report']);
-            fputcsv($handle, ['Start', $start]);
-            fputcsv($handle, ['End', $end]);
-            fputcsv($handle, []);
-
-            fputcsv($handle, [
-                'Category',
-                'Item Name',
-                'Code',
-                'Quantity',
-                'UOM',
-                'Unit Cost',
-                'Total',
-            ]);
-
-            foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row->category,
-                    $row->name,
-                    $row->code,
-                    (float)$row->quantity,
-                    $row->uom,
-                    number_format($row->unitCost, 2),
-                    number_format($row->total, 2),
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename);
+        return ExcelExport::download(
+            'waste-summary-' . now()->format('Ymd_His') . '.xlsx',
+            'Waste Summary Report',
+            $headers,
+            $dataRows
+        );
     }
 }

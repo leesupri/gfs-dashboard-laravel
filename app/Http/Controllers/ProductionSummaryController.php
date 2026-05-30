@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductionSummaryController extends Controller
 {
@@ -51,7 +51,7 @@ class ProductionSummaryController extends Controller
             ->groupBy('category', 'name', 'code', 'uom', 'warehouse');
 
         if ($export === 'csv') {
-            return $this->exportCsv(clone $rowsQuery, $start, $end, $category, $warehouse, $q);
+            return $this->exportCsv(clone $rowsQuery);
         }
 
         $rows = (clone $rowsQuery)
@@ -79,51 +79,32 @@ class ProductionSummaryController extends Controller
         ]);
     }
 
-    protected function exportCsv($rowsQuery, $start, $end, $category, $warehouse, $q): StreamedResponse
+    protected function exportCsv($rowsQuery)
     {
-        $filename = 'production-summary-' . now()->format('Ymd_His') . '.csv';
-
         $rows = $rowsQuery
             ->orderBy('category')
             ->orderBy('item_name')
             ->get();
 
-        return response()->streamDownload(function () use ($rows, $start, $end, $category, $warehouse, $q) {
-            $handle = fopen('php://output', 'w');
+        $headers = ['Category', 'Item Name', 'Item Code', 'Quantity', 'UOM', 'Warehouse'];
 
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        $dataRows = [];
+        foreach ($rows as $row) {
+            $dataRows[] = [
+                $row->category,
+                $row->item_name,
+                $row->item_code,
+                (float) $row->quantity,
+                $row->uom,
+                $row->warehouse,
+            ];
+        }
 
-            fputcsv($handle, ['Production Summary Report']);
-            fputcsv($handle, ['Start Date', $start]);
-            fputcsv($handle, ['End Date', $end]);
-            fputcsv($handle, ['Category Filter', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Warehouse Filter', $warehouse !== '' ? $warehouse : 'All']);
-            fputcsv($handle, ['Search Filter', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
-
-            fputcsv($handle, [
-                'Category',
-                'Item Name',
-                'Item Code',
-                'Quantity',
-                'UOM',
-                'Warehouse',
-            ]);
-
-            foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row->category,
-                    $row->item_name,
-                    $row->item_code,
-                    number_format((float) $row->quantity, 2, '.', ''),
-                    $row->uom,
-                    $row->warehouse,
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return ExcelExport::download(
+            'production-summary-' . now()->format('Ymd_His') . '.xlsx',
+            'Production Summary Report',
+            $headers,
+            $dataRows
+        );
     }
 }

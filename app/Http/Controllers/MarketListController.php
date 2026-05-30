@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MarketListController extends Controller
 {
@@ -98,10 +98,8 @@ class MarketListController extends Controller
         ]);
     }
 
-    protected function exportCsv($baseQuery, $start, $end, $category, $q): StreamedResponse
+    protected function exportCsv($baseQuery, $start, $end, $category, $q)
     {
-        $filename = 'market-list-' . now()->format('Ymd_His') . '.csv';
-
         $rows = $baseQuery
             ->select([
                 'c.code as category_code',
@@ -127,61 +125,40 @@ class MarketListController extends Controller
             ->orderBy('i.name')
             ->get();
 
-        return response()->streamDownload(function () use ($rows, $start, $end, $category, $q) {
-            $handle = fopen('php://output', 'w');
+        $headers = [
+            'Category Code', 'Category', 'Item ID', 'Item Code', 'Item Name',
+            'Barcode', 'PLU', 'Inventory UOM', 'Purchase UOM', 'Recipe UOM',
+            'Purchase To Inventory Conversion', 'Inventory To Recipe Conversion',
+            'Purchase Price', 'Average Cost', 'Saved', 'Updated',
+        ];
 
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        $dataRows = [];
+        foreach ($rows as $row) {
+            $dataRows[] = [
+                $row->category_code,
+                $row->category,
+                $row->item_id,
+                $row->item_code,
+                $row->item_name,
+                $row->barcode,
+                $row->plu,
+                $row->inventory_uom,
+                $row->purchase_uom,
+                $row->recipe_uom,
+                (float) $row->purchase_to_inventory_conversion,
+                (float) $row->inventory_to_recipe_conversion,
+                (float) $row->purchase_price,
+                (float) $row->average_cost,
+                $row->saved,
+                $row->updated,
+            ];
+        }
 
-            fputcsv($handle, ['Market List Report']);
-            fputcsv($handle, ['Start Date', $start !== '' ? $start : 'All Dates']);
-            fputcsv($handle, ['End Date', $end !== '' ? $end : 'All Dates']);
-            fputcsv($handle, ['Category Filter', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Search Filter', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
-
-            fputcsv($handle, [
-                'Category Code',
-                'Category',
-                'Item ID',
-                'Item Code',
-                'Item Name',
-                'Barcode',
-                'PLU',
-                'Inventory UOM',
-                'Purchase UOM',
-                'Recipe UOM',
-                'Purchase To Inventory Conversion',
-                'Inventory To Recipe Conversion',
-                'Purchase Price',
-                'Average Cost',
-                'Saved',
-                'Updated',
-            ]);
-
-            foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row->category_code,
-                    $row->category,
-                    $row->item_id,
-                    $row->item_code,
-                    $row->item_name,
-                    $row->barcode,
-                    $row->plu,
-                    $row->inventory_uom,
-                    $row->purchase_uom,
-                    $row->recipe_uom,
-                    (float) $row->purchase_to_inventory_conversion,
-                    (float) $row->inventory_to_recipe_conversion,
-                    number_format((float) $row->purchase_price, 2, ',', '.'),
-                    number_format((float)$row->average_cost, 2, ',', '.'),
-                    $row->saved,
-                    $row->updated,
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return ExcelExport::download(
+            'market-list-' . now()->format('Ymd_His') . '.xlsx',
+            'Market List Report',
+            $headers,
+            $dataRows
+        );
     }
 }

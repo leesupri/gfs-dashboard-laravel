@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Carbon\Carbon;
 
 class NoSalesController extends Controller
@@ -45,40 +45,41 @@ class NoSalesController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request)
     {
         [$from, $to] = $this->dateRange($request);
         $rows        = $this->fetchItemRows($from, $to);
-        $filename    = 'no_sales_items_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.csv';
 
-        return response()->streamDownload(function () use ($rows) {
-            $out = fopen('php://output', 'w');
-            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        $headers = [
+            'Department', 'Category', 'Description',
+            'Qty', 'Net Sales', 'Discount', 'Cost',
+            'Profit', 'Profit %', 'Service', 'Tax', 'Total',
+        ];
 
-            fputcsv($out, [
-                'Department','Category','Description',
-                'Qty','Net Sales','Discount','Cost',
-                'Profit','Profit %','Service','Tax','Total',
-            ]);
+        $dataRows = [];
+        foreach ($rows as $r) {
+            $dataRows[] = [
+                $r->department,
+                $r->category,
+                $r->description,
+                $r->quantity,
+                $r->netSales,
+                $r->disc,
+                $r->cost,
+                $r->profit,
+                number_format($r->profitPct, 2) . '%',
+                $r->service,
+                $r->tax,
+                $r->total,
+            ];
+        }
 
-            foreach ($rows as $r) {
-                fputcsv($out, [
-                    $r->department,
-                    $r->category,
-                    $r->description,
-                    $r->quantity,
-                    $r->netSales,
-                    $r->disc,
-                    $r->cost,
-                    $r->profit,
-                    number_format($r->profitPct, 2).'%',
-                    $r->service,
-                    $r->tax,
-                    $r->total,
-                ]);
-            }
-            fclose($out);
-        }, $filename);
+        return ExcelExport::download(
+            'no_sales_items_' . $from->format('Ymd') . '_' . $to->format('Ymd') . '.xlsx',
+            'No Sales Items',
+            $headers,
+            $dataRows
+        );
     }
 
     /* ==================== HELPERS ==================== */
@@ -106,6 +107,7 @@ class NoSalesController extends Controller
             ->join('tbl_departments as dep','cat.department_id','=', 'dep.id')
             ->whereBetween('s.date', [$from, $to])
             ->whereNull('s.invoice_id')
+            ->where('s.voidCheck', 0)
             ->where('s.closed', 1)
             ->where(function ($q) {
                 $q->where('i.noReport', '!=', 1)->orWhere('sl.unitPrice', '>', 0);

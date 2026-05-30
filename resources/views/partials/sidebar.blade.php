@@ -23,6 +23,12 @@
     ['label' => 'Transfer Detail', 'href' => route('reports.transferDetail'), 'key' => 'reports.transferDetail', 'icon' => 'repeat'],
     ['label' => 'Waste Summary', 'href' => route('reports.wasteSummary'), 'key' => 'reports.wasteSummary', 'icon' => 'trash'],
     ['label' => 'Sales Forecast', 'href' => route('reports.salesForecast'), 'key' => 'reports.salesForecast', 'icon' => 'trend'],
+    ['label' => 'Cashier Shift', 'href' => route('reports.cashierShift'), 'key' => 'reports.cashierShift', 'icon' => 'card'],
+    ['label' => 'Opening Day',        'href' => route('reports.openingDay'),           'key' => 'reports.openingDay',           'icon' => 'activity'],
+    ['label' => 'No Sales Receipt',   'href' => route('reports.noSalesReceiptDetail'), 'key' => 'reports.noSalesReceiptDetail', 'icon' => 'receipt'],
+    ['label' => 'Daily Category',     'href' => route('reports.dailyCategory'),         'key' => 'reports.dailyCategory',        'icon' => 'tag'],
+    ['label' => 'Daily Hour Sales',   'href' => route('reports.dailyHour'),             'key' => 'reports.dailyHour',            'icon' => 'activity'],
+    ['label' => 'Support Tickets', 'href' => route('support.tickets.index'), 'key' => 'support.tickets.index', 'icon' => 'ticket'],
   ];
 
   $routeName = request()->route()?->getName() ?? '';

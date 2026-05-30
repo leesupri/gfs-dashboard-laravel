@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransferDetailController extends Controller
 {
@@ -81,17 +81,7 @@ class TransferDetailController extends Controller
                 ->orderBy('transfer_id')
                 ->get();
 
-            return $this->exportCsv(
-                $rows,
-                $start,
-                $end,
-                $fromWarehouse,
-                $toWarehouse,
-                $category,
-                $item,
-                $transferId,
-                $q
-            );
+            return $this->exportCsv($rows);
         }
 
         $rows = (clone $rowsQuery)
@@ -155,78 +145,35 @@ class TransferDetailController extends Controller
         ]);
     }
 
-    private function exportCsv(
-        $rows,
-        $start,
-        $end,
-        $fromWarehouse,
-        $toWarehouse,
-        $category,
-        $item,
-        $transferId,
-        $q
-    ): StreamedResponse {
-        $filename = 'transfer-detail-' . now()->format('Ymd_His') . '.csv';
+    private function exportCsv($rows)
+    {
+        $headers = [
+            'Category', 'Item Name', 'Item Code', 'Transfer ID', 'Date',
+            'Quantity', 'UOM', 'From Warehouse', 'To Warehouse', 'Description', 'Created By',
+        ];
 
-        return response()->streamDownload(function () use (
-            $rows,
-            $start,
-            $end,
-            $fromWarehouse,
-            $toWarehouse,
-            $category,
-            $item,
-            $transferId,
-            $q
-        ) {
-            $handle = fopen('php://output', 'w');
+        $dataRows = [];
+        foreach ($rows as $row) {
+            $dataRows[] = [
+                $row->category,
+                $row->item_name,
+                $row->item_code,
+                $row->transfer_id,
+                $row->date ? Carbon::parse($row->date)->format('d/m/Y H:i:s') : '',
+                (float) $row->quantity,
+                $row->uom,
+                $row->from_warehouse,
+                $row->to_warehouse,
+                $row->description,
+                $row->created_by,
+            ];
+        }
 
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, ['Transfer Detail Report']);
-            fputcsv($handle, ['Start Date', $start]);
-            fputcsv($handle, ['End Date', $end]);
-            fputcsv($handle, ['From Warehouse', $fromWarehouse !== '' ? $fromWarehouse : 'All']);
-            fputcsv($handle, ['To Warehouse', $toWarehouse !== '' ? $toWarehouse : 'All']);
-            fputcsv($handle, ['Category', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Item', $item !== '' ? $item : 'All']);
-            fputcsv($handle, ['Transfer ID', $transferId !== '' ? $transferId : 'All']);
-            fputcsv($handle, ['Search', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
-
-            fputcsv($handle, [
-                'Category',
-                'Item Name',
-                'Item Code',
-                'Transfer ID',
-                'Date',
-                'Quantity',
-                'UOM',
-                'From Warehouse',
-                'To Warehouse',
-                'Description',
-                'Created By',
-            ]);
-
-            foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row->category,
-                    $row->item_name,
-                    $row->item_code,
-                    $row->transfer_id,
-                    $row->date ? Carbon::parse($row->date)->format('d/m/Y H:i:s') : '',
-                    (float) $row->quantity,
-                    $row->uom,
-                    $row->from_warehouse,
-                    $row->to_warehouse,
-                    $row->description,
-                    $row->created_by,
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return ExcelExport::download(
+            'transfer-detail-' . now()->format('Ymd_His') . '.xlsx',
+            'Transfer Detail Report',
+            $headers,
+            $dataRows
+        );
     }
 }

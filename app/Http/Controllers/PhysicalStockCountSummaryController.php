@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PhysicalStockCountSummaryController extends Controller
 {
@@ -68,7 +68,7 @@ class PhysicalStockCountSummaryController extends Controller
                 ->orderBy('item_name')
                 ->get();
 
-            return $this->exportCsv($rows, $start, $end, $warehouse, $category, $q);
+            return $this->exportCsv($rows);
         }
 
         $rows = (clone $rowsQuery)
@@ -132,87 +132,47 @@ class PhysicalStockCountSummaryController extends Controller
         ]);
     }
 
-    private function exportCsv($rows, $start, $end, $warehouse, $category, $q): StreamedResponse
+    private function exportCsv($rows)
     {
-        $filename = 'physical-stock-count-summary-' . now()->format('Ymd_His') . '.csv';
-
         $groupedRows = $rows->groupBy('warehouse');
-        $grandTotal = $rows->sum(fn ($row) => (float) $row->diff_cost);
+        $grandTotal  = $rows->sum(fn ($row) => (float) $row->diff_cost);
 
-        return response()->streamDownload(function () use ($groupedRows, $grandTotal, $start, $end, $warehouse, $category, $q) {
-            $handle = fopen('php://output', 'w');
+        $headers = [
+            'Warehouse', 'Category', 'Item Name', 'Item Code', 'UOM',
+            'Calculated', 'Actual', 'Diff', 'Variance', 'Diff Cost',
+        ];
 
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, ['Physical Stock Count Summary Group By Warehouse']);
-            fputcsv($handle, ['Start Date', $start]);
-            fputcsv($handle, ['End Date', $end]);
-            fputcsv($handle, ['Warehouse Filter', $warehouse !== '' ? $warehouse : 'All']);
-            fputcsv($handle, ['Category Filter', $category !== '' ? $category : 'All']);
-            fputcsv($handle, ['Search Filter', $q !== '' ? $q : 'All']);
-            fputcsv($handle, []);
-
-            foreach ($groupedRows as $warehouseName => $items) {
-                fputcsv($handle, [$warehouseName]);
-
-                fputcsv($handle, [
-                    'Category',
-                    'Item Name',
-                    'Item Code',
-                    'UOM',
-                    'Calculated',
-                    'Actual',
-                    'Diff',
-                    'Variance',
-                    'Diff Cost',
-                ]);
-
-                foreach ($items as $row) {
-                    fputcsv($handle, [
-                        $row->category,
-                        $row->item_name,
-                        $row->item_code,
-                        $row->uom,
-                        (float) $row->calculated,
-                        (float) $row->actual,
-                        (float) $row->diff,
-                        (float) $row->variances,
-                        (float) $row->diff_cost,
-                    ]);
-                }
-
-                $warehouseSubtotal = $items->sum(fn ($row) => (float) $row->diff_cost);
-
-                fputcsv($handle, [
-                    '',
-                    'SUBTOTAL ' . $warehouseName,
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    (float) $warehouseSubtotal,
-                ]);
-
-                fputcsv($handle, []);
+        $dataRows = [];
+        foreach ($groupedRows as $warehouseName => $items) {
+            foreach ($items as $row) {
+                $dataRows[] = [
+                    $warehouseName,
+                    $row->category,
+                    $row->item_name,
+                    $row->item_code,
+                    $row->uom,
+                    (float) $row->calculated,
+                    (float) $row->actual,
+                    (float) $row->diff,
+                    (float) $row->variances,
+                    (float) $row->diff_cost,
+                ];
             }
 
-            fputcsv($handle, [
-                '',
-                'GRAND TOTAL',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                (float) $grandTotal,
-            ]);
+            $warehouseSubtotal = $items->sum(fn ($row) => (float) $row->diff_cost);
+            $dataRows[] = [
+                '', 'SUBTOTAL ' . $warehouseName, '', '', '', '', '', '', '', (float) $warehouseSubtotal,
+            ];
+            $dataRows[] = ['', '', '', '', '', '', '', '', '', ''];
+        }
 
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        $dataRows[] = ['', 'GRAND TOTAL', '', '', '', '', '', '', '', (float) $grandTotal];
+
+        return ExcelExport::download(
+            'physical-stock-count-summary-' . now()->format('Ymd_His') . '.xlsx',
+            'Physical Stock Count Summary',
+            $headers,
+            $dataRows
+        );
     }
 }

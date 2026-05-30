@@ -168,6 +168,12 @@
                 class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
             </div>
 
+            <div>
+              <label for="c-email" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Email <span class="font-normal normal-case" style="color:var(--text-muted)">(for ticket notifications)</span></label>
+              <input id="c-email" type="email" name="email" value="{{ old('email') }}" placeholder="staff@pimsgundaling.com"
+                class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            </div>
+
             <div class="flex items-end pb-0.5">
               <label for="c-active" class="inline-flex cursor-pointer items-center gap-2 text-sm">
                 <input id="c-active" type="checkbox" name="is_active" value="1" checked
@@ -244,6 +250,12 @@
             <div>
               <label for="e-title" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Job Title</label>
               <input id="e-title" type="text" name="title" value="{{ old('title', $selectedStaff->title) }}"
+                class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            </div>
+
+            <div>
+              <label for="e-email" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Email <span class="font-normal normal-case" style="color:var(--text-muted)">(for ticket notifications)</span></label>
+              <input id="e-email" type="email" name="email" value="{{ old('email', $selectedStaff->email) }}" placeholder="staff@pimsgundaling.com"
                 class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
             </div>
 

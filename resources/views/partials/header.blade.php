@@ -24,6 +24,13 @@
     'reports.transferDetail'               => 'Transfer Detail',
     'reports.wasteSummary'                 => 'Waste Summary',
     'reports.salesForecast'                => 'Sales Forecast',
+    'reports.cashierShift'                 => 'Cashier Shift Report',
+    'reports.openingDay'                   => 'Opening Day Report',
+    'reports.noSalesReceiptDetail'         => 'No Sales Receipt Detail',
+    'reports.dailyCategory'                => 'Daily Category Sales',
+    'reports.dailyHour'                    => 'Daily Hour Sales',
+    'support.tickets.index'                => 'Support Tickets',
+    'support.tickets.show'                 => 'Ticket Detail',
     'settings.staff'                       => 'Staff Settings',
     'settings.security'                    => 'Security & Permissions',
     'settings.changePassword'              => 'Change Password',
@@ -38,7 +45,16 @@
 <header
   x-data="{
     userOpen: false,
+    dropdownTop: 0,
+    dropdownRight: 0,
     clock: '',
+    toggleUserMenu(btn) {
+      if (this.userOpen) { this.userOpen = false; return; }
+      const rect = btn.getBoundingClientRect();
+      this.dropdownTop   = rect.bottom + 8;
+      this.dropdownRight = window.innerWidth - rect.right;
+      this.userOpen = true;
+    },
     initClock() {
       const tick = () => {
         const now = new Date().toLocaleString('id-ID', {
@@ -62,8 +78,7 @@
     $nextTick(() => { $el.classList.remove('opacity-0','-translate-y-2') });
     initClock();
   "
-  @click.away="userOpen = false"
-  class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 opacity-0 -translate-y-2 transition-all duration-500"
+  class="relative flex items-center justify-between gap-4 px-4 py-3 sm:px-6 opacity-0 -translate-y-2 transition-all duration-500"
   aria-label="App header"
 >
 
@@ -108,7 +123,7 @@
     <div class="relative">
       <button
         type="button"
-        @click="userOpen = !userOpen"
+        @click="toggleUserMenu($el)"
         class="flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition hover:bg-gray-100 active:scale-95"
         aria-label="User menu"
       >
@@ -137,19 +152,21 @@
         </svg>
       </button>
 
-      {{-- Dropdown panel --}}
-      <div
-        x-show="userOpen"
-        x-cloak
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0 translate-y-1 scale-95"
-        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-        x-transition:leave="transition ease-in duration-100"
-        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-        x-transition:leave-end="opacity-0 translate-y-1 scale-95"
-        class="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border bg-white shadow-xl"
-        style="border-color:var(--card-border); box-shadow:var(--card-shadow), 0 20px 40px rgba(0,0,0,0.12)"
-      >
+      {{-- Dropdown panel — position: fixed so it escapes every overflow/transform parent --}}
+      <template x-teleport="body">
+        <div
+          x-show="userOpen"
+          x-cloak
+          x-transition:enter="transition ease-out duration-150"
+          x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+          x-transition:leave="transition ease-in duration-100"
+          x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+          x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+          :style="`position:fixed; top:${dropdownTop}px; right:${dropdownRight}px; z-index:99999; border-color:var(--card-border); box-shadow:var(--card-shadow), 0 20px 40px rgba(0,0,0,0.12);`"
+          class="w-56 overflow-hidden rounded-2xl border bg-white shadow-xl"
+          @click.outside="userOpen = false"
+        >
         {{-- User info header --}}
         <div class="border-b px-4 py-3" style="border-color:var(--card-border); background:var(--content-bg)">
           <p class="text-sm font-bold leading-tight" style="color:var(--text-primary)">
@@ -193,6 +210,42 @@
               Activity Log
             </a>
           @endif
+
+          {{-- Divider --}}
+          <div class="my-1 h-px" style="background:var(--card-border)"></div>
+
+          {{-- Submit a ticket — always visible to any logged-in user --}}
+          <a href="{{ route('tickets.create') }}"
+            @click="userOpen = false"
+            target="_blank"
+            class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:bg-indigo-50"
+            style="color:#6366f1">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+            </svg>
+            Submit a Support Ticket
+          </a>
+
+          @if(($currentStaffUser ?? null)?->hasAccess('support.tickets.index'))
+            <a href="{{ route('support.tickets.index') }}"
+              @click="userOpen = false"
+              class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50"
+              style="color:var(--text-secondary)">
+              <span class="flex items-center gap-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Manage Tickets
+              </span>
+              @php
+                $openCount = \App\Models\Ticket::where('status','open')->count();
+              @endphp
+              @if($openCount > 0)
+                <span class="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+                  style="background:#6366f1">{{ $openCount }}</span>
+              @endif
+            </a>
+          @endif
         </div>
 
         {{-- Logout --}}
@@ -209,7 +262,8 @@
           </form>
         </div>
 
-      </div>
+        </div>
+      </template>
     </div>
 
   </div>

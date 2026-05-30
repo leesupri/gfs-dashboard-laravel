@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <div
@@ -20,7 +20,7 @@
         <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
         </svg>
-        Export CSV
+        Export Excel
       </a>
       <button type="button" @click="filtersOpen = !filtersOpen"
         class="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-white transition active:scale-95"
@@ -96,12 +96,31 @@
     </form>
   </div>
 
+  {{-- Truncation warning --}}
+  @if(!empty($truncated))
+    <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <div>
+        <p class="text-sm font-semibold text-amber-800">Result limit reached (2,000 rows)</p>
+        <p class="mt-0.5 text-xs text-amber-700">Please narrow the date range, invoice, item, or warehouse filter to see complete data. Use Export Excel for the full dataset.</p>
+      </div>
+    </div>
+  @endif
+
   {{-- Invoice cards --}}
   @forelse($byInvoice as $invoiceId => $items)
     @php
-      $invoiceTotal = $items->sum('totalCost');
-      $date         = optional($items->first())->date;
-      $recipeCount  = $items->groupBy('resultDescription')->count();
+      $invoiceTotal = array_sum(array_column($items, 'totalCost'));
+      $firstItem    = $items[0] ?? null;
+      $date         = $firstItem ? $firstItem->date : null;
+      $recipeCount  = count(array_unique(array_column($items, 'resultDescription')));
+      // Group lines by resultDescription for the inner loop
+      $byRecipe = [];
+      foreach ($items as $row) {
+          $byRecipe[$row->resultDescription][] = $row;
+      }
     @endphp
 
     <div class="gfs-card overflow-hidden">
@@ -127,7 +146,7 @@
               <span class="text-sm font-semibold" style="color:var(--text-muted)">No Invoice</span>
             @endif
             <p class="text-xs" style="color:var(--text-muted)">
-              {{ optional($date)->format('d M Y') }}
+              {{ $date ? \Carbon\Carbon::parse($date)->format('d M Y') : '' }}
               <span class="ml-1.5 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium" style="color:var(--text-muted)">
                 {{ $recipeCount }} recipe(s)
               </span>
@@ -141,8 +160,11 @@
       </div>
 
       {{-- Recipe groups --}}
-      @foreach($items->groupBy('resultDescription') as $desc => $lines)
-        @php $sub = $lines->sum('totalCost'); @endphp
+      @foreach($byRecipe as $desc => $lines)
+        @php
+          $sub      = array_sum(array_column($lines, 'totalCost'));
+          $firstLine = $lines[0] ?? null;
+        @endphp
 
         {{-- Recipe sub-header --}}
         <div class="flex items-center justify-between px-5 py-2.5"
@@ -150,7 +172,7 @@
           <div>
             <p class="text-sm font-semibold" style="color:var(--text-primary)">{{ $desc }}</p>
             <p class="text-xs" style="color:var(--text-muted)">
-              Qty: {{ number_format($lines->first()->resultQuantity, 0) }}
+              Qty: {{ $firstLine ? number_format($firstLine->resultQuantity, 0) : 0 }}
             </p>
           </div>
           <span class="text-sm font-bold" style="color:var(--text-primary)">
@@ -198,7 +220,7 @@
   @endforelse
 
   {{-- Grand total --}}
-  @if($byInvoice->count())
+  @if(count($byInvoice))
     <div class="flex justify-end">
       <div class="gfs-card flex items-center gap-6 px-6 py-4" style="background:var(--sidebar-bg)">
         <div>
@@ -208,7 +230,7 @@
         <div class="h-10 w-px" style="background:rgba(255,255,255,0.1)"></div>
         <div>
           <p class="text-[10px] font-semibold uppercase tracking-wider text-green-400/70">Invoices</p>
-          <p class="mt-0.5 text-xl font-bold text-white">{{ $byInvoice->count() }}</p>
+          <p class="mt-0.5 text-xl font-bold text-white">{{ count($byInvoice) }}</p>
         </div>
       </div>
     </div>
@@ -446,3 +468,4 @@
 
 </div>
 @endsection
+

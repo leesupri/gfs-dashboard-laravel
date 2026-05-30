@@ -182,6 +182,13 @@
                 </div>
             </form>
 
+            {{-- Support ticket link --}}
+            <div class="mt-4 text-center">
+                <a href="{{ route('tickets.create') }}" class="text-xs text-white/40 hover:text-white/70 transition">
+                    🎫 Need help? Submit a Support Ticket
+                </a>
+            </div>
+
             {{-- Footer --}}
             <div class="mt-8 pt-6 glass-divider border-t text-center">
                 <p class="text-xs text-white/30 font-light">
