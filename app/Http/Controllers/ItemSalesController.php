@@ -156,10 +156,12 @@ class ItemSalesController extends Controller
     private function buildRows($filters, $from, $to, $diFrom, $diTo)
     {
         $temp = DB::connection('reports_mysql')->table('tbl_sales as s')
+            ->join('tbl_invoices as inv', 's.invoice_id', '=', 'inv.id')
             ->join('tbl_sales_lines as sl', 's.id', '=', 'sl.sales_id')
             ->whereBetween('s.dateIndex', [$diFrom, $diTo])
             ->whereBetween('s.date', [$from, $to])
             ->where('s.voidCheck', 0)
+            ->where('sl.quantity', '>', 0)
             ->groupBy('sl.item_id')
             ->selectRaw('
                 sl.item_id,

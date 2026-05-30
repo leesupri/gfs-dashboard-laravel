@@ -31,9 +31,15 @@ class CheckRoutePermission
 
     // REPORTS (optional consistency)
     'reports.consumptionDetailInvoice.export' => 'reports.consumptionDetailInvoice',
-    'reports.consumptionWarehouse.export' => 'reports.consumptionWarehouse',
-    'reports.recipe.export' => 'reports.recipe',
+    'reports.consumptionWarehouse.export'     => 'reports.consumptionWarehouse',
+    'reports.recipe.export'                   => 'reports.recipe',
     'reports.recipe-board.export'             => 'reports.recipe-board',
+
+    // SUPPORT TICKETS — all sub-actions inherit index permission
+    'support.tickets.show'         => 'support.tickets.index',
+    'support.tickets.reply'        => 'support.tickets.index',
+    'support.tickets.updateStatus' => 'support.tickets.index',
+    'support.tickets.assign'       => 'support.tickets.index',
     ];
 
     $routeNameToCheck = $permissionMap[$routeName] ?? $routeName;
