@@ -218,6 +218,155 @@
     </div>
   </div>
 
+  {{-- ── Flash data for toast system ──────────────────── --}}
+  @php
+    $flashMessages = array_values(array_filter([
+      session('success') ? ['type' => 'success', 'message' => session('success')] : null,
+      session('error')   ? ['type' => 'error',   'message' => session('error')]   : null,
+      session('warning') ? ['type' => 'warning', 'message' => session('warning')] : null,
+      session('info')    ? ['type' => 'info',    'message' => session('info')]    : null,
+      $errors->any()     ? ['type' => 'error',   'message' => $errors->first()]   : null,
+    ]));
+  @endphp
+  <script id="__flash__" type="application/json">@json($flashMessages)</script>
+
+  {{-- ── Global Toast Notification System ─────────────── --}}
+  <div
+    id="toast-container"
+    x-data="gfsToast()"
+    x-init="init()"
+    class="pointer-events-none fixed right-4 top-4 z-[99999] flex flex-col gap-2"
+    style="width:min(360px, calc(100vw - 2rem))"
+    aria-live="polite"
+    aria-atomic="false"
+  >
+    <template x-for="t in toasts" :key="t.id">
+      <div
+        x-show="t.visible"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-x-6 scale-95"
+        x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-x-6 scale-95"
+        class="pointer-events-auto relative overflow-hidden rounded-2xl shadow-2xl"
+        :class="t.bg"
+        role="alert"
+      >
+        {{-- Progress bar --}}
+        <div class="absolute bottom-0 left-0 h-[3px] rounded-full bg-white/25 transition-none"
+          :style="`width:${t.pct}%; transition: width ${t.dur}ms linear;`"></div>
+
+        <div class="flex items-start gap-3 p-4">
+          {{-- Icon --}}
+          <div class="mt-0.5 shrink-0" x-html="t.icon"></div>
+
+          {{-- Text --}}
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-white leading-snug" x-text="t.title"></p>
+            <template x-if="t.body">
+              <p class="mt-0.5 text-xs leading-relaxed text-white/70" x-text="t.body"></p>
+            </template>
+          </div>
+
+          {{-- Close --}}
+          <button @click="dismiss(t.id)"
+            class="shrink-0 rounded-lg p-0.5 text-white/60 transition hover:bg-white/15 hover:text-white"
+            aria-label="Close notification">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <script>
+  function gfsToast() {
+    const ICONS = {
+      success: `<svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      error:   `<svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      warning: `<svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
+      info:    `<svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    };
+    const BG = {
+      success: 'bg-green-600',
+      error:   'bg-red-600',
+      warning: 'bg-amber-500',
+      info:    'bg-blue-600',
+    };
+    const TITLES = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Info' };
+
+    return {
+      toasts: [],
+      _id: 0,
+
+      init() {
+        // Expose window.toast API
+        window.toast = {
+          success: (msg, body, dur) => this.show('success', msg, body, dur),
+          error:   (msg, body, dur) => this.show('error',   msg, body, dur),
+          warning: (msg, body, dur) => this.show('warning', msg, body, dur),
+          info:    (msg, body, dur) => this.show('info',    msg, body, dur),
+          dismiss: (id)             => this.dismiss(id),
+        };
+
+        // Auto-fire Laravel flash messages
+        try {
+          const flashes = JSON.parse(document.getElementById('__flash__')?.textContent || '[]');
+          flashes.forEach((f, i) => setTimeout(() => this.show(f.type, f.message), i * 120));
+        } catch (_) {}
+      },
+
+      show(type, message, body = null, duration = 4500) {
+        const id = ++this._id;
+
+        // Determine title vs body: if message is short treat as title, else split
+        const title = typeof message === 'string' && message.length <= 60
+          ? message
+          : TITLES[type];
+        const bodyText = body || (message !== title ? message : null);
+
+        const toast = {
+          id,
+          type,
+          title,
+          body:    bodyText,
+          icon:    ICONS[type]  || ICONS.info,
+          bg:      BG[type]     || BG.info,
+          dur:     duration,
+          pct:     100,
+          visible: true,
+          _timer:  null,
+        };
+
+        this.toasts.push(toast);
+
+        // Kick off progress bar animation on next frame
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            const t = this.toasts.find(x => x.id === id);
+            if (t) t.pct = 0;
+          });
+        });
+
+        // Auto-dismiss
+        toast._timer = setTimeout(() => this.dismiss(id), duration);
+        return id;
+      },
+
+      dismiss(id) {
+        const t = this.toasts.find(x => x.id === id);
+        if (!t) return;
+        clearTimeout(t._timer);
+        t.visible = false;
+        setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== id); }, 250);
+      },
+    };
+  }
+  </script>
+
   @stack('scripts')
 </body>
 </html>
