@@ -116,6 +116,7 @@
   $settingsRoutes = [
     'settings.staff', 'settings.security',
     'settings.changePassword', 'settings.pageLog', 'log-viewer.index',
+    'settings.printer',
   ];
   $settingsOpen = in_array($routeName, $settingsRoutes, true);
 @endphp
@@ -224,6 +225,9 @@
           @include('partials.sidebar-settings-item', ['href' => route('settings.changePassword'), 'label' => 'Change Password', 'icon' => 'key', 'active' => $routeName === 'settings.changePassword'])
           @if(($currentStaffUser ?? null)?->hasAccess('settings.pageLog'))
             @include('partials.sidebar-settings-item', ['href' => route('settings.pageLog'), 'label' => 'Activity Log', 'icon' => 'activity', 'active' => $routeName === 'settings.pageLog'])
+          @endif
+          @if(($currentStaffUser ?? null)?->hasAccess('settings.printer'))
+            @include('partials.sidebar-settings-item', ['href' => route('settings.printer'), 'label' => 'Printer Settings', 'icon' => 'printer', 'active' => $routeName === 'settings.printer'])
           @endif
           @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
             @include('partials.sidebar-settings-item', ['href' => route('log-viewer.index'), 'label' => 'Log Viewer', 'icon' => 'terminal', 'active' => str_starts_with($routeName, 'log-viewer')])
@@ -356,6 +360,9 @@
         @include('partials.sidebar-settings-item', ['href' => route('settings.changePassword'), 'label' => 'Change Password', 'icon' => 'key', 'active' => $routeName === 'settings.changePassword'])
         @if(($currentStaffUser ?? null)?->hasAccess('settings.pageLog'))
           @include('partials.sidebar-settings-item', ['href' => route('settings.pageLog'), 'label' => 'Activity Log', 'icon' => 'activity', 'active' => $routeName === 'settings.pageLog'])
+        @endif
+        @if(($currentStaffUser ?? null)?->hasAccess('settings.printer'))
+          @include('partials.sidebar-settings-item', ['href' => route('settings.printer'), 'label' => 'Printer Settings', 'icon' => 'printer', 'active' => $routeName === 'settings.printer'])
         @endif
         @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
           @include('partials.sidebar-settings-item', ['href' => route('log-viewer.index'), 'label' => 'Log Viewer', 'icon' => 'terminal', 'active' => str_starts_with($routeName, 'log-viewer')])

@@ -22,6 +22,15 @@
         </svg>
         Export Excel
       </a>
+      <a href="{{ route('print.summarySales', array_filter(['start' => request('start', $filters['from']->toDateString()), 'end' => request('end', $filters['to']->toDateString())])) }}"
+         target="_blank"
+         class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium transition hover:bg-gray-50"
+         style="color:var(--text-primary)">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-6 0h4v4H8v-4z"/>
+        </svg>
+        Print
+      </a>
       <button type="button" @click="showFilter = !showFilter"
         class="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-white transition active:scale-95"
         :class="showFilter ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'">

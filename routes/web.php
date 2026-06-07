@@ -37,6 +37,8 @@ use App\Http\Controllers\StaffSettingController;
 use App\Http\Controllers\SecuritySettingController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketManagementController;
+use App\Http\Controllers\PrintController;
+use App\Http\Controllers\PrinterSettingController;
 
 // ── Public ticket routes (no auth required) ──────────────────────────────────
 Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
@@ -134,5 +136,22 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::post('/support/tickets/{ticket}/reply', [TicketManagementController::class, 'reply'])->name('support.tickets.reply');
     Route::patch('/support/tickets/{ticket}/status', [TicketManagementController::class, 'updateStatus'])->name('support.tickets.updateStatus');
     Route::patch('/support/tickets/{ticket}/assign', [TicketManagementController::class, 'assign'])->name('support.tickets.assign');
+});
+
+// ── Thermal print views ───────────────────────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/print/receipt/{invoiceId}',  [PrintController::class, 'receipt'])->whereNumber('invoiceId')->name('print.receipt');
+    Route::get('/print/item-sales',           [PrintController::class, 'itemSales'])->name('print.itemSales');
+    Route::get('/print/summary-sales',        [PrintController::class, 'summarySales'])->name('print.summarySales');
+    Route::get('/print/test/{station}',       [PrintController::class, 'testPrinter'])->name('print.test');
+});
+
+// ── Printer settings ──────────────────────────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/settings/printer',                          [PrinterSettingController::class, 'index'])->name('settings.printer');
+    Route::post('/settings/printer/stations',                [PrinterSettingController::class, 'store'])->name('settings.printer.store');
+    Route::put('/settings/printer/stations/{station}',       [PrinterSettingController::class, 'update'])->name('settings.printer.update');
+    Route::delete('/settings/printer/stations/{station}',    [PrinterSettingController::class, 'destroy'])->name('settings.printer.destroy');
+    Route::post('/settings/printer/logo',                    [PrinterSettingController::class, 'uploadLogo'])->name('settings.printer.logo');
 });
 

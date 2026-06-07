@@ -40,6 +40,18 @@ class CheckRoutePermission
     'support.tickets.reply'        => 'support.tickets.index',
     'support.tickets.updateStatus' => 'support.tickets.index',
     'support.tickets.assign'       => 'support.tickets.index',
+
+    // PRINTER SETTINGS — sub-actions inherit settings.printer
+    'settings.printer.store'   => 'settings.printer',
+    'settings.printer.update'  => 'settings.printer',
+    'settings.printer.destroy' => 'settings.printer',
+    'settings.printer.logo'    => 'settings.printer',
+
+    // PRINT VIEWS — inherit the underlying report permission
+    'print.receipt'      => 'sales.index',
+    'print.itemSales'    => 'itemSales.index',
+    'print.summarySales' => 'summarySales.index',
+    'print.test'         => 'settings.printer',
     ];
 
     $routeNameToCheck = $permissionMap[$routeName] ?? $routeName;

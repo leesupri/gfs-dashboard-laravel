@@ -39,11 +39,16 @@ class SecuritySettingController extends Controller
         'reports.noSalesReceiptDetail'=> 'No Sales Receipt Detail',
         'reports.dailyCategory'       => 'Daily Category Sales',
         'reports.dailyHour'           => 'Daily Hour Sales',
-        'settings.staff' => 'Staff Settings',
+        'settings.staff'    => 'Staff Settings',
         'settings.security' => 'Security Settings',
-        'settings.pageLog' => 'Page Activity Log',
-        'log-viewer.index' => 'Log Viewer',
+        'settings.pageLog'  => 'Page Activity Log',
+        'settings.printer'  => 'Printer Settings',
+        'log-viewer.index'  => 'Log Viewer',
         'support.tickets.index' => 'Support Tickets',
+        'print.receipt'      => 'Print — Receipt',
+        'print.itemSales'    => 'Print — Item Sales',
+        'print.summarySales' => 'Print — Summary Sales',
+        'print.test'         => 'Print — Test Printer',
     ];
 
     public function index(Request $request)

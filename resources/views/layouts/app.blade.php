@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ $title ?? 'GFS Dashboard' }}</title>
+  @php $faviconPath = \App\Models\AppSetting::get('logo_path'); @endphp
+  <link rel="icon" href="{{ $faviconPath ? asset('storage/' . $faviconPath) : asset('favicon.ico') }}">
 
   {{-- Sora: geometric, farmstead-premium. Pairs with the glassmorphism login. --}}
   <link rel="preconnect" href="https://fonts.googleapis.com">
