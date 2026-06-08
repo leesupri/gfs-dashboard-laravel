@@ -28,10 +28,11 @@ class PrinterSettingController extends Controller
         ]);
 
         PrinterStation::create([
-            'name'       => $request->name,
-            'ip_address' => $request->ip_address,
-            'location'   => $request->location,
-            'is_active'  => $request->boolean('is_active', true),
+            'name'        => $request->name,
+            'ip_address'  => $request->ip_address,
+            'location'    => $request->location,
+            'is_active'   => $request->boolean('is_active', true),
+            'is_auto_cut' => $request->boolean('is_auto_cut', false),
         ]);
 
         return redirect()->route('settings.printer')->with('success', 'Printer station added.');
@@ -46,10 +47,11 @@ class PrinterSettingController extends Controller
         ]);
 
         $station->update([
-            'name'       => $request->name,
-            'ip_address' => $request->ip_address,
-            'location'   => $request->location,
-            'is_active'  => $request->boolean('is_active', true),
+            'name'        => $request->name,
+            'ip_address'  => $request->ip_address,
+            'location'    => $request->location,
+            'is_active'   => $request->boolean('is_active', true),
+            'is_auto_cut' => $request->boolean('is_auto_cut', false),
         ]);
 
         return redirect()->route('settings.printer')->with('success', 'Printer station updated.');

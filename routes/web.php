@@ -144,6 +144,7 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/print/item-sales',           [PrintController::class, 'itemSales'])->name('print.itemSales');
     Route::get('/print/summary-sales',        [PrintController::class, 'summarySales'])->name('print.summarySales');
     Route::get('/print/test/{station}',       [PrintController::class, 'testPrinter'])->name('print.test');
+    Route::post('/print/cut/{station}',       [PrintController::class, 'sendCut'])->name('print.cut');
 });
 
 // ── Printer settings ──────────────────────────────────────────────────────────

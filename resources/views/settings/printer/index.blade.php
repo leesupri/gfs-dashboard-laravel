@@ -5,7 +5,7 @@
      x-data="{
        showModal: false,
        editingId: null,
-       form: { name: '', ip_address: '', location: '', is_active: true },
+       form: { name: '', ip_address: '', location: '', is_active: true, is_auto_cut: false },
        storeUrl: '{{ route('settings.printer.store') }}',
        updateUrlTemplate: '{{ route('settings.printer.update', '__ID__') }}',
        logoPreview: null,
@@ -17,15 +17,16 @@
        get isEditing() { return this.editingId !== null; },
        openAdd() {
          this.editingId = null;
-         this.form = { name: '', ip_address: '', location: '', is_active: true };
+         this.form = { name: '', ip_address: '', location: '', is_active: true, is_auto_cut: false };
          this.showModal = true;
        },
        openEdit(station) {
-         this.editingId       = station.id;
-         this.form.name       = station.name       ?? '';
-         this.form.ip_address = station.ip_address ?? '';
-         this.form.location   = station.location   ?? '';
-         this.form.is_active  = Boolean(station.is_active);
+         this.editingId          = station.id;
+         this.form.name          = station.name       ?? '';
+         this.form.ip_address    = station.ip_address ?? '';
+         this.form.location      = station.location   ?? '';
+         this.form.is_active     = Boolean(station.is_active);
+         this.form.is_auto_cut   = Boolean(station.is_auto_cut);
          this.showModal = true;
        },
        closeModal() { this.showModal = false; },
@@ -142,7 +143,7 @@
                      style="background:rgba(234,179,8,0.12);color:#ca8a04">
                     Test
                   </a>
-                  <button @click="openEdit({{ json_encode(['id'=>$station->id,'name'=>$station->name,'ip_address'=>$station->ip_address,'location'=>$station->location,'is_active'=>$station->is_active]) }})"
+                  <button @click="openEdit({{ json_encode(['id'=>$station->id,'name'=>$station->name,'ip_address'=>$station->ip_address,'location'=>$station->location,'is_active'=>$station->is_active,'is_auto_cut'=>$station->is_auto_cut]) }})"
                           class="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-80"
                           style="background:rgba(99,102,241,0.1);color:#818cf8">
                     Edit
@@ -244,6 +245,17 @@
             <input type="checkbox" name="is_active" value="1" id="is_active_modal" x-model="form.is_active"
                    class="h-4 w-4 rounded accent-green-500">
             <label for="is_active_modal" class="text-sm" style="color:var(--text-primary)">Active</label>
+          </div>
+
+          {{-- Auto-cut toggle --}}
+          <div class="flex items-center gap-3">
+            <input type="hidden" name="is_auto_cut" value="0">
+            <input type="checkbox" name="is_auto_cut" value="1" id="is_auto_cut_modal" x-model="form.is_auto_cut"
+                   class="h-4 w-4 rounded accent-yellow-500">
+            <div>
+              <label for="is_auto_cut_modal" class="text-sm" style="color:var(--text-primary)">Auto Cut after print</label>
+              <p class="text-xs" style="color:var(--text-secondary)">Sends ESC/POS cut command to the printer IP after each print job</p>
+            </div>
           </div>
 
           {{-- Buttons --}}
