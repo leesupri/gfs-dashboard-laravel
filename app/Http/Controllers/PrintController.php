@@ -215,6 +215,28 @@ class PrintController extends Controller
         ]);
     }
 
+    /* ── Auto Cut ───────────────────────────────────────────── */
+
+    public function sendCut(PrinterStation $station)
+    {
+        if (!$station->ip_address) {
+            return response()->json(['ok' => false, 'error' => 'No IP address configured for this station.'], 422);
+        }
+
+        try {
+            $socket = @fsockopen($station->ip_address, 9100, $errno, $errstr, 3);
+            if (!$socket) {
+                return response()->json(['ok' => false, 'error' => "Cannot connect to {$station->ip_address}: {$errstr}"], 503);
+            }
+            // ESC/POS GS V 65 0 — full cut with paper feed
+            fwrite($socket, "\x1d\x56\x41\x00");
+            fclose($socket);
+            return response()->json(['ok' => true]);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
     /* ── Test Printer ───────────────────────────────────────── */
 
     public function testPrinter(PrinterStation $station)

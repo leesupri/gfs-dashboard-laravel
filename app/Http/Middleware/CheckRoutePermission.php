@@ -52,6 +52,7 @@ class CheckRoutePermission
     'print.itemSales'    => 'itemSales.index',
     'print.summarySales' => 'summarySales.index',
     'print.test'         => 'settings.printer',
+    'print.cut'          => 'settings.printer',
     ];
 
     $routeNameToCheck = $permissionMap[$routeName] ?? $routeName;

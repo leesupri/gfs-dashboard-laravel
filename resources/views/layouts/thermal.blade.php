@@ -175,9 +175,31 @@
   <div class="t-printed">Printed: {{ now()->format('d/m/Y H:i') }}</div>
 
   <script>
+    @php
+      $cutStation = $station ?? null;
+      if (!$cutStation && request()->filled('station')) {
+          $cutStation = \App\Models\PrinterStation::find((int) request('station'));
+      }
+      $cutUrl = ($cutStation && $cutStation->is_auto_cut && $cutStation->ip_address)
+                ? route('print.cut', $cutStation)
+                : null;
+    @endphp
+
     @if(request()->boolean('autoprint'))
       window.addEventListener('load', function () {
         setTimeout(function () { window.print(); }, 400);
+      });
+    @endif
+
+    @if($cutUrl)
+      window.addEventListener('afterprint', function () {
+        fetch('{{ $cutUrl }}', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+          }
+        }).catch(function () {});
       });
     @endif
   </script>
