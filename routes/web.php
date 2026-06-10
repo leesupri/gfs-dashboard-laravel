@@ -40,6 +40,7 @@ use App\Http\Controllers\TicketManagementController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\PrinterSettingController;
 use App\Http\Controllers\CostAlertSettingController;
+use App\Http\Controllers\StockCountController;
 
 // ── Public ticket routes (no auth required) ──────────────────────────────────
 Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
@@ -163,5 +164,13 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::put('/settings/cost-alert',          [CostAlertSettingController::class, 'update'])->name('settings.costAlert.update');
     Route::post('/settings/cost-alert/test',    [CostAlertSettingController::class, 'sendTest'])->name('settings.costAlert.test');
     Route::post('/settings/cost-alert/run',     [CostAlertSettingController::class, 'runCheck'])->name('settings.costAlert.run');
+});
+
+// ── Stock counts ──────────────────────────────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/stock/counts', [StockCountController::class, 'index'])->name('stock.counts.index');
+    Route::get('/stock/counts/{id}', [StockCountController::class, 'show'])->name('stock.counts.show');
+    Route::post('/stock/counts/{id}/approve', [StockCountController::class, 'approve'])->name('stock.counts.approve');
+    Route::post('/stock/counts/{id}/reject', [StockCountController::class, 'reject'])->name('stock.counts.reject');
 });
 
