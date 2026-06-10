@@ -1,0 +1,64 @@
+services:
+  gfs_app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: gfs_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - gfs_network
+
+  gfs_mysql:
+    image: mysql:8.0
+    container_name: gfs_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: db_gfs_dashboard
+      MYSQL_USER: gfs_app
+      MYSQL_PASSWORD: gfs080621
+      MYSQL_ROOT_PASSWORD: gfs080621
+    ports:
+      - "3307:3306"
+    volumes:
+      - gfs_mysql_data:/var/lib/mysql
+    networks:
+      - gfs_network
+
+  gfs_nginx:
+    image: nginx:1.27-alpine
+    container_name: gfs_nginx
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - gfs_app
+    networks:
+      - gfs_network
+
+  gfs_scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: gfs_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - gfs_app
+    networks:
+      - gfs_network
+
+networks:
+  gfs_network:
+    driver: bridge
+
+volumes:
+  gfs_mysql_data:
