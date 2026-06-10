@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\DailyCostAlertMail;
+use App\Models\AppSetting;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -65,8 +66,8 @@ class CheckDailyCost extends Command
         }
 
         $costPct       = ($summary->cost / $summary->revenue) * 100;
-        $threshold     = (float) config('app.cost_threshold',      env('COST_THRESHOLD',      45));
-        $itemThreshold = (float) config('app.item_cost_threshold',  env('ITEM_COST_THRESHOLD', 95));
+        $threshold     = (float) AppSetting::get('cost_threshold',      env('COST_THRESHOLD',      45));
+        $itemThreshold = (float) AppSetting::get('item_cost_threshold', env('ITEM_COST_THRESHOLD', 95));
 
         $this->line(sprintf(
             "Cost: %s / Revenue: %s = %.2f%%  (threshold: %.0f%%)",
@@ -120,11 +121,11 @@ class CheckDailyCost extends Command
 
         // ── 5. Send email alert ───────────────────────────────────────────────
         $recipients = array_values(array_filter(
-            array_map('trim', explode(',', env('COST_ALERT_EMAIL', '')))
+            array_map('trim', explode(',', AppSetting::get('cost_alert_email', env('COST_ALERT_EMAIL', ''))))
         ));
 
         if (empty($recipients)) {
-            $this->warn("COST_ALERT_EMAIL not configured — alert not sent.");
+            $this->warn("Cost alert email not configured — alert not sent. Set it in Settings > Cost Alert.");
             Cache::put($cacheKey, true, now()->endOfDay());
             return self::SUCCESS;
         }

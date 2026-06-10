@@ -47,6 +47,11 @@ class CheckRoutePermission
     'settings.printer.destroy' => 'settings.printer',
     'settings.printer.logo'    => 'settings.printer',
 
+    // COST ALERT SETTINGS — sub-actions inherit settings.costAlert
+    'settings.costAlert.update' => 'settings.costAlert',
+    'settings.costAlert.test'   => 'settings.costAlert',
+    'settings.costAlert.run'    => 'settings.costAlert',
+
     // PRINT VIEWS — inherit the underlying report permission
     'print.receipt'      => 'sales.index',
     'print.itemSales'    => 'itemSales.index',

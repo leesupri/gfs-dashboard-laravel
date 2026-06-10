@@ -43,6 +43,7 @@ class SecuritySettingController extends Controller
         'settings.security' => 'Security Settings',
         'settings.pageLog'  => 'Page Activity Log',
         'settings.printer'  => 'Printer Settings',
+        'settings.costAlert'=> 'Cost Alert Settings',
         'log-viewer.index'  => 'Log Viewer',
         'support.tickets.index' => 'Support Tickets',
         'print.receipt'      => 'Print — Receipt',

@@ -39,6 +39,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketManagementController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\PrinterSettingController;
+use App\Http\Controllers\CostAlertSettingController;
 
 // ── Public ticket routes (no auth required) ──────────────────────────────────
 Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
@@ -154,5 +155,13 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::put('/settings/printer/stations/{station}',       [PrinterSettingController::class, 'update'])->name('settings.printer.update');
     Route::delete('/settings/printer/stations/{station}',    [PrinterSettingController::class, 'destroy'])->name('settings.printer.destroy');
     Route::post('/settings/printer/logo',                    [PrinterSettingController::class, 'uploadLogo'])->name('settings.printer.logo');
+});
+
+// ── Cost alert settings ───────────────────────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/settings/cost-alert',          [CostAlertSettingController::class, 'index'])->name('settings.costAlert');
+    Route::put('/settings/cost-alert',          [CostAlertSettingController::class, 'update'])->name('settings.costAlert.update');
+    Route::post('/settings/cost-alert/test',    [CostAlertSettingController::class, 'sendTest'])->name('settings.costAlert.test');
+    Route::post('/settings/cost-alert/run',     [CostAlertSettingController::class, 'runCheck'])->name('settings.costAlert.run');
 });
 

@@ -116,7 +116,7 @@
   $settingsRoutes = [
     'settings.staff', 'settings.security',
     'settings.changePassword', 'settings.pageLog', 'log-viewer.index',
-    'settings.printer',
+    'settings.printer', 'settings.costAlert',
   ];
   $settingsOpen = in_array($routeName, $settingsRoutes, true);
 @endphp
@@ -228,6 +228,9 @@
           @endif
           @if(($currentStaffUser ?? null)?->hasAccess('settings.printer'))
             @include('partials.sidebar-settings-item', ['href' => route('settings.printer'), 'label' => 'Printer Settings', 'icon' => 'printer', 'active' => $routeName === 'settings.printer'])
+          @endif
+          @if(($currentStaffUser ?? null)?->hasAccess('settings.costAlert'))
+            @include('partials.sidebar-settings-item', ['href' => route('settings.costAlert'), 'label' => 'Cost Alert Settings', 'icon' => 'mail', 'active' => $routeName === 'settings.costAlert'])
           @endif
           @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
             @include('partials.sidebar-settings-item', ['href' => route('log-viewer.index'), 'label' => 'Log Viewer', 'icon' => 'terminal', 'active' => str_starts_with($routeName, 'log-viewer')])
@@ -363,6 +366,9 @@
         @endif
         @if(($currentStaffUser ?? null)?->hasAccess('settings.printer'))
           @include('partials.sidebar-settings-item', ['href' => route('settings.printer'), 'label' => 'Printer Settings', 'icon' => 'printer', 'active' => $routeName === 'settings.printer'])
+        @endif
+        @if(($currentStaffUser ?? null)?->hasAccess('settings.costAlert'))
+          @include('partials.sidebar-settings-item', ['href' => route('settings.costAlert'), 'label' => 'Cost Alert Settings', 'icon' => 'mail', 'active' => $routeName === 'settings.costAlert'])
         @endif
         @if(($currentStaffUser ?? null)?->hasAccess('log-viewer.index'))
           @include('partials.sidebar-settings-item', ['href' => route('log-viewer.index'), 'label' => 'Log Viewer', 'icon' => 'terminal', 'active' => str_starts_with($routeName, 'log-viewer')])
