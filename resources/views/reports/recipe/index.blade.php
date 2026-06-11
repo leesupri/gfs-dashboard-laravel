@@ -76,6 +76,38 @@
           </select>
         </div>
 
+        <div>
+          <label for="f-variance-sign" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Variance</label>
+          <select id="f-variance-sign" name="variance_sign"
+            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            <option value="">All</option>
+            <option value="over"  {{ $varianceSign === 'over'  ? 'selected' : '' }}>Over (positive)</option>
+            <option value="under" {{ $varianceSign === 'under' ? 'selected' : '' }}>Under (negative)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="f-variance-min" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Variance Min</label>
+          <input id="f-variance-min" type="number" step="0.01" name="variance_min" value="{{ $varianceMin }}" placeholder="e.g. -5000"
+            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+        </div>
+
+        <div>
+          <label for="f-variance-max" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Variance Max</label>
+          <input id="f-variance-max" type="number" step="0.01" name="variance_max" value="{{ $varianceMax }}" placeholder="e.g. 5000"
+            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+        </div>
+
+        <div>
+          <label for="f-variance-sort" class="mb-1 block text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Sort by Variance</label>
+          <select id="f-variance-sort" name="variance_sort"
+            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            <option value="">Default</option>
+            <option value="desc" {{ $varianceSort === 'desc' ? 'selected' : '' }}>High to Low</option>
+            <option value="asc"  {{ $varianceSort === 'asc'  ? 'selected' : '' }}>Low to High</option>
+          </select>
+        </div>
+
         <div class="flex items-end pb-0.5">
           <label class="inline-flex cursor-pointer items-center gap-2 text-sm" style="color:var(--text-secondary)">
             <input type="checkbox" name="hide_zero" value="1" {{ $hideZero ? 'checked' : '' }}

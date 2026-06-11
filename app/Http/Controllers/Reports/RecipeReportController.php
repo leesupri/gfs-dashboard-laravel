@@ -16,10 +16,23 @@ class RecipeReportController extends Controller
         $purchased = trim((string) $request->query('purchased', ''));
         $stocked = trim((string) $request->query('stocked', ''));
         $hideZero = (string) $request->query('hide_zero', '0') === '1';
+        $varianceSign = trim((string) $request->query('variance_sign', ''));
+        $varianceMin = $request->query('variance_min', '');
+        $varianceMax = $request->query('variance_max', '');
+        $varianceSort = trim((string) $request->query('variance_sort', ''));
 
         $rows = $this->buildQuery($q, $sales, $purchased, $stocked, $hideZero)->get();
 
-        $byRecipe = $rows->groupBy('recipeName');
+        $byRecipe = $this->filterByVariance(
+            $rows->groupBy('recipeName'),
+            $varianceSign,
+            $varianceMin,
+            $varianceMax
+        );
+
+        $byRecipe = $this->sortByVariance($byRecipe, $varianceSort);
+
+        $rows = $byRecipe->flatten(1);
 
         $grandTotal = $rows->sum('totalCost');
 
@@ -34,6 +47,10 @@ class RecipeReportController extends Controller
             'purchased' => $purchased,
             'stocked' => $stocked,
             'hideZero' => $hideZero,
+            'varianceSign' => $varianceSign,
+            'varianceMin' => $varianceMin,
+            'varianceMax' => $varianceMax,
+            'varianceSort' => $varianceSort,
         ]);
     }
 
@@ -44,9 +61,19 @@ class RecipeReportController extends Controller
         $purchased = trim((string) $request->query('purchased', ''));
         $stocked  = trim((string) $request->query('stocked', ''));
         $hideZero = (string) $request->query('hide_zero', '0') === '1';
+        $varianceSign = trim((string) $request->query('variance_sign', ''));
+        $varianceMin = $request->query('variance_min', '');
+        $varianceMax = $request->query('variance_max', '');
+        $varianceSort = trim((string) $request->query('variance_sort', ''));
 
         $rows     = $this->buildQuery($q, $sales, $purchased, $stocked, $hideZero)->get();
-        $byRecipe = $rows->groupBy('recipeName');
+        $byRecipe = $this->filterByVariance(
+            $rows->groupBy('recipeName'),
+            $varianceSign,
+            $varianceMin,
+            $varianceMax
+        );
+        $byRecipe = $this->sortByVariance($byRecipe, $varianceSort);
 
         $headers = [
             'Recipe ID', 'Recipe Name', 'Production', 'UOM',
@@ -95,6 +122,63 @@ class RecipeReportController extends Controller
             $headers,
             $dataRows
         );
+    }
+
+    /**
+     * Filter a recipe-grouped collection by per-unit variance (actual/unit - expected/unit).
+     */
+    private function filterByVariance($byRecipe, string $varianceSign, $varianceMin, $varianceMax)
+    {
+        $varianceMin = $varianceMin !== '' && $varianceMin !== null ? (float) $varianceMin : null;
+        $varianceMax = $varianceMax !== '' && $varianceMax !== null ? (float) $varianceMax : null;
+
+        if ($varianceSign === '' && $varianceMin === null && $varianceMax === null) {
+            return $byRecipe;
+        }
+
+        return $byRecipe->filter(function ($items) use ($varianceSign, $varianceMin, $varianceMax) {
+            $variance = $this->recipeVariance($items);
+
+            $matchesSign = match ($varianceSign) {
+                'over' => $variance > 0,
+                'under' => $variance < 0,
+                default => true,
+            };
+
+            $withinRange = ($varianceMin === null || $variance >= $varianceMin)
+                && ($varianceMax === null || $variance <= $varianceMax);
+
+            return $matchesSign && $withinRange;
+        });
+    }
+
+    /**
+     * Sort a recipe-grouped collection by per-unit variance (high-to-low or low-to-high).
+     */
+    private function sortByVariance($byRecipe, string $varianceSort)
+    {
+        return match ($varianceSort) {
+            'desc' => $byRecipe->sortByDesc(fn ($items) => $this->recipeVariance($items)),
+            'asc' => $byRecipe->sortBy(fn ($items) => $this->recipeVariance($items)),
+            default => $byRecipe,
+        };
+    }
+
+    /**
+     * Per-unit variance for a recipe's items: actual/unit - expected/unit.
+     */
+    private function recipeVariance($items): float
+    {
+        $first         = $items->first();
+        $expectedTotal = $items->sum('expectedTotal');
+        $actualTotal   = $items->sum('actualTotal');
+        $production    = (float) ($first->production ?: 0);
+
+        if ($production <= 0) {
+            return 0.0;
+        }
+
+        return ($actualTotal / $production) - ($expectedTotal / $production);
     }
 
     private function buildQuery(string $q, string $sales, string $purchased, string $stocked, bool $hideZero)
