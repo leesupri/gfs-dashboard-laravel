@@ -50,6 +50,8 @@ class SecuritySettingController extends Controller
         'print.itemSales'    => 'Print — Item Sales',
         'print.summarySales' => 'Print — Summary Sales',
         'print.test'         => 'Print — Test Printer',
+        'stock.counts.index' => 'Stock Counts',
+        'stock.approve'      => 'Stock Counts — Approve/Reject',
     ];
 
     public function index(Request $request)

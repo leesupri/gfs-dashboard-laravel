@@ -78,6 +78,7 @@
         ['label' => 'Transfer Detail',  'href' => route('reports.transferDetail'),             'key' => 'reports.transferDetail',             'icon' => 'repeat'],
         ['label' => 'Physical Stock',   'href' => route('reports.physicalStockCountSummary'),  'key' => 'reports.physicalStockCountSummary',  'icon' => 'archive'],
         ['label' => 'Waste Summary',    'href' => route('reports.wasteSummary'),               'key' => 'reports.wasteSummary',               'icon' => 'trash'],
+        ['label' => 'Stock Counts',     'href' => route('stock.counts.index'),                 'key' => 'stock.counts.index',                 'icon' => 'clipboard'],
       ],
     ],
     [
