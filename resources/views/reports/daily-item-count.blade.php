@@ -1,39 +1,5 @@
 @extends('layouts.app')
 
-@push('styles')
-<style>
-@media print {
-  body * { visibility: hidden !important; }
-  #thermal-print, #thermal-print * { visibility: visible !important; }
-  #thermal-print { position: fixed; inset: 0; padding: 4mm 3mm; }
-  @page { size: 80mm auto; margin: 0; }
-
-  #thermal-print {
-    width: 72mm;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 8pt;
-    color: #000;
-    background: #fff;
-  }
-  #thermal-print .t-center  { text-align: center; }
-  #thermal-print .t-title   { font-size: 10pt; font-weight: bold; text-align: center; }
-  #thermal-print .t-sub     { font-size: 7pt; text-align: center; color: #333; }
-  #thermal-print .t-dash    { border-top: 1px dashed #000; margin: 1.5mm 0; }
-  #thermal-print .t-solid   { border-top: 1px solid #000; margin: 1.5mm 0; }
-  #thermal-print .t-kpi     { display: flex; justify-content: space-between; font-size: 7.5pt; padding: 0.4mm 0; }
-  #thermal-print .t-cat     { font-weight: bold; text-transform: uppercase; font-size: 7pt;
-                               letter-spacing: 0.03em; padding: 1.5mm 0 0.5mm; border-top: 1px dashed #000; }
-  #thermal-print table      { width: 100%; border-collapse: collapse; }
-  #thermal-print td         { font-size: 7.5pt; padding: 0.5mm 0; vertical-align: top; }
-  #thermal-print .td-name   { width: 78%; word-break: break-word; padding-right: 1mm; }
-  #thermal-print .td-qty    { width: 22%; text-align: right; font-weight: bold; white-space: nowrap; }
-  #thermal-print .t-footer  { display: flex; justify-content: space-between;
-                               font-weight: bold; font-size: 8.5pt; padding-top: 1.5mm; margin-top: 1mm;
-                               border-top: 1px solid #000; }
-  #thermal-print .t-printed { font-size: 6.5pt; text-align: center; color: #666; margin-top: 3mm; }
-}
-</style>
-@endpush
 
 @section('content')
 <div x-data="{ filtersOpen: {{ (request()->hasAny(['start','end','category','q']) ? 'true' : 'false') }} }"
@@ -58,7 +24,7 @@
         </svg>
         Export Excel
       </a>
-      <button type="button" onclick="window.print()"
+      <button type="button" onclick="printThermal()"
         class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium transition hover:bg-gray-50"
         style="color:var(--text-primary)">
         <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -310,6 +276,9 @@
 <div id="thermal-print" style="display:none">
 
   {{-- Header --}}
+  <div class="t-title">GUNDALING FARMSTEAD</div>
+  
+  <div class="t-dash"></div>
   <div class="t-title">Daily Item Count</div>
   <div class="t-sub">
     {{ \Carbon\Carbon::parse($start)->format('d M Y') }}
@@ -357,8 +326,48 @@
   @else
     <div class="t-center" style="padding:4mm 0">No data for this period.</div>
   @endif
-
+  
   <div class="t-printed">Printed: {{ now()->format('d M Y H:i') }}</div>
+  <div class="t-sub">Gundaling Farmstead — For Internal Use Only</div>
 </div>
+
+@push('scripts')
+<script>
+function printThermal() {
+  const content = document.getElementById('thermal-print').innerHTML;
+  const win = window.open('', '_blank', 'width=400,height=700');
+  win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Daily Item Count</title>
+<style>
+@page { size: 80mm auto; margin: 0; }
+* { box-sizing: border-box; }
+body { font-family: 'Courier New', Courier, monospace; font-size: 8pt; color: #000; background: #fff; width: 72mm; padding: 4mm 3mm; margin: 0; }
+.t-center  { text-align: center; }
+.t-title   { font-size: 10pt; font-weight: bold; text-align: center; }
+.t-sub     { font-size: 7pt; text-align: center; color: #333; }
+.t-dash    { border-top: 1px dashed #000; margin: 1.5mm 0; }
+.t-solid   { border-top: 1px solid #000; margin: 1.5mm 0; }
+.t-kpi     { display: flex; justify-content: space-between; font-size: 7.5pt; padding: 0.4mm 0; }
+.t-cat     { font-weight: bold; text-transform: uppercase; font-size: 7pt; letter-spacing: 0.03em; padding: 1.5mm 0 0.5mm; border-top: 1px dashed #000; }
+.t-footer  { display: flex; justify-content: space-between; font-weight: bold; font-size: 8.5pt; padding-top: 1.5mm; margin-top: 1mm; border-top: 1px solid #000; }
+.t-printed { font-size: 6.5pt; text-align: center; color: #666; margin-top: 3mm; }
+table      { width: 100%; border-collapse: collapse; }
+thead      { display: none; }
+td         { font-size: 7.5pt; padding: 0.5mm 0; vertical-align: top; }
+.td-name   { width: 78%; word-break: break-word; padding-right: 1mm; }
+.td-qty    { width: 22%; text-align: right; font-weight: bold; white-space: nowrap; }
+</style>
+</head>
+<body>${content}</body>
+</html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 300);
+}
+</script>
+@endpush
 
 @endsection
