@@ -370,5 +370,53 @@
   </script>
 
   @stack('scripts')
+
+  {{-- ── Today-Restricted Modal ──────────────────────────── --}}
+  @if(session('today_restricted'))
+  <style>
+    #today-restrict-dlg::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    #today-restrict-dlg { border: none; padding: 0; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-width: 24rem; width: calc(100% - 2rem); background: var(--card-bg); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; }
+  </style>
+  <dialog
+    id="today-restrict-dlg"
+    x-data
+    x-init="$el.showModal()"
+    aria-labelledby="today-restrict-title"
+  >
+    <div class="h-1.5 w-full bg-amber-400 rounded-t-2xl"></div>
+
+    <div class="p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+          <svg class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 id="today-restrict-title" class="text-base font-bold" style="color:var(--text-primary)">
+            Today's Report Not Yet Available
+          </h2>
+          <p class="mt-1.5 text-sm leading-relaxed" style="color:var(--text-secondary)">
+            Today's data is only accessible after <span class="font-semibold" style="color:var(--text-primary)">end-of-day closing</span> has been completed in the POS system.
+          </p>
+          <p class="mt-2 text-sm" style="color:var(--text-secondary)">
+            You can still review <span class="font-semibold" style="color:var(--text-primary)">yesterday</span> and all earlier dates using the date filter.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end">
+        <button
+          type="button"
+          onclick="document.getElementById('today-restrict-dlg').close()"
+          class="rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 active:scale-95"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  </dialog>
+  @endif
+
 </body>
 </html>

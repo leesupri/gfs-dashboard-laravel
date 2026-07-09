@@ -40,6 +40,6 @@ class RestrictTodayReport
         }
 
         return redirect($request->url() . '?' . http_build_query($params))
-            ->with('warning', "Today's data is not available until end-of-day closing is completed in POS.");
+            ->with('today_restricted', true);
     }
 }
