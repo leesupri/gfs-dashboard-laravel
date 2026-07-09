@@ -36,6 +36,7 @@
       'items' => [
         ['label' => 'Daily Category',   'href' => route('reports.dailyCategory'),  'key' => 'reports.dailyCategory',  'icon' => 'tag'],
         ['label' => 'Daily Hour Sales', 'href' => route('reports.dailyHour'),      'key' => 'reports.dailyHour',      'icon' => 'activity'],
+        ['label' => 'Daily Item Count', 'href' => route('reports.dailyItemCount'),      'key' => 'reports.dailyItemCount',      'icon' => 'grid'],
         ['label' => 'Activity Logs',    'href' => route('reports.activityLog'),    'key' => 'reports.activityLog',    'icon' => 'activity'],
       ],
     ],
@@ -78,6 +79,7 @@
         ['label' => 'Transfer Detail',  'href' => route('reports.transferDetail'),             'key' => 'reports.transferDetail',             'icon' => 'repeat'],
         ['label' => 'Physical Stock',   'href' => route('reports.physicalStockCountSummary'),  'key' => 'reports.physicalStockCountSummary',  'icon' => 'archive'],
         ['label' => 'Waste Summary',    'href' => route('reports.wasteSummary'),               'key' => 'reports.wasteSummary',               'icon' => 'trash'],
+        ['label' => 'Stock Count', 'href' => route('stock.counts.index'),                 'key' => 'stock.counts.index',                 'icon' => 'clipboard'],
       ],
     ],
     [

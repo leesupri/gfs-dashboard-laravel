@@ -58,6 +58,11 @@ class CheckRoutePermission
     'print.summarySales' => 'summarySales.index',
     'print.test'         => 'settings.printer',
     'print.cut'          => 'settings.printer',
+
+    // STOCK COUNTS
+    'stock.counts.show'    => 'stock.counts.index',
+    'stock.counts.approve' => 'stock.approve',
+    'stock.counts.reject'  => 'stock.approve',
     ];
 
     $routeNameToCheck = $permissionMap[$routeName] ?? $routeName;

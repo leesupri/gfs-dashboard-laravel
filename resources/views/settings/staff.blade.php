@@ -156,11 +156,16 @@
                 class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
             </div>
 
-            <div class="flex items-end pb-0.5">
+            <div class="flex flex-col justify-end gap-2 pb-0.5">
               <label for="c-active" class="inline-flex cursor-pointer items-center gap-2 text-sm">
                 <input id="c-active" type="checkbox" name="is_active" value="1" checked
                   class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                 <span style="color:var(--text-secondary)">Active account</span>
+              </label>
+              <label for="c-restrict-today" class="inline-flex cursor-pointer items-center gap-2 text-sm">
+                <input id="c-restrict-today" type="checkbox" name="restrict_today_report" value="1"
+                  class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                <span style="color:var(--text-secondary)">Block today's report until EOD closing</span>
               </label>
             </div>
 
@@ -241,12 +246,18 @@
                 class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
             </div>
 
-            <div class="flex items-end pb-0.5">
+            <div class="flex flex-col justify-end gap-2 pb-0.5">
               <label for="e-active" class="inline-flex cursor-pointer items-center gap-2 text-sm">
                 <input id="e-active" type="checkbox" name="is_active" value="1"
                   {{ old('is_active', $selectedStaff->is_active) ? 'checked' : '' }}
                   class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                 <span style="color:var(--text-secondary)">Active account</span>
+              </label>
+              <label for="e-restrict-today" class="inline-flex cursor-pointer items-center gap-2 text-sm">
+                <input id="e-restrict-today" type="checkbox" name="restrict_today_report" value="1"
+                  {{ old('restrict_today_report', $selectedStaff->restrict_today_report) ? 'checked' : '' }}
+                  class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                <span style="color:var(--text-secondary)">Block today's report until EOD closing</span>
               </label>
             </div>
 

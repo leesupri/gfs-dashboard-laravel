@@ -14,6 +14,7 @@ class StaffUser extends Model
         'password',
         'title',
         'is_active',
+        'restrict_today_report',
     ];
 
     protected $hidden = [
@@ -21,12 +22,23 @@ class StaffUser extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'              => 'boolean',
+        'restrict_today_report'  => 'boolean',
     ];
 
     public function permissions(): HasMany
     {
         return $this->hasMany(SecurityPermission::class);
+    }
+
+    public function stockCounts(): HasMany
+    {
+        return $this->hasMany(StockCount::class, 'created_by');
+    }
+
+    public function approvedCounts(): HasMany
+    {
+        return $this->hasMany(StockCount::class, 'approved_by');
     }
 
     public function hasAccess(string $routeName): bool

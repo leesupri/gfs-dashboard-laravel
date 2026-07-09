@@ -54,21 +54,23 @@ class StaffSettingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', 'unique:staff_users,username'],
-            'email'    => ['nullable', 'email', 'max:150', 'unique:staff_users,email'],
-            'title'    => ['nullable', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_active'=> ['nullable', 'boolean'],
+            'name'                   => ['required', 'string', 'max:255'],
+            'username'               => ['required', 'string', 'max:255', 'unique:staff_users,username'],
+            'email'                  => ['nullable', 'email', 'max:150', 'unique:staff_users,email'],
+            'title'                  => ['nullable', 'string', 'max:255'],
+            'password'               => ['required', 'string', 'min:8', 'confirmed'],
+            'is_active'              => ['nullable', 'boolean'],
+            'restrict_today_report'  => ['nullable', 'boolean'],
         ]);
 
         StaffUser::create([
-            'name'      => $validated['name'],
-            'username'  => $validated['username'],
-            'email'     => $validated['email'] ?? null,
-            'title'     => $validated['title'] ?? null,
-            'password'  => Hash::make($validated['password']),
-            'is_active' => $request->boolean('is_active', true),
+            'name'                  => $validated['name'],
+            'username'              => $validated['username'],
+            'email'                 => $validated['email'] ?? null,
+            'title'                 => $validated['title'] ?? null,
+            'password'              => Hash::make($validated['password']),
+            'is_active'             => $request->boolean('is_active', true),
+            'restrict_today_report' => $request->boolean('restrict_today_report'),
         ]);
 
         return redirect()
@@ -79,25 +81,27 @@ class StaffSettingController extends Controller
     public function update(Request $request, StaffUser $staffUser)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'username' => [
+            'name'                   => ['required', 'string', 'max:255'],
+            'username'               => [
                 'required', 'string', 'max:255',
                 Rule::unique('staff_users', 'username')->ignore($staffUser->id),
             ],
-            'email'    => [
+            'email'                  => [
                 'nullable', 'email', 'max:150',
                 Rule::unique('staff_users', 'email')->ignore($staffUser->id),
             ],
-            'title'    => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'is_active'=> ['nullable', 'boolean'],
+            'title'                  => ['nullable', 'string', 'max:255'],
+            'password'               => ['nullable', 'string', 'min:8', 'confirmed'],
+            'is_active'              => ['nullable', 'boolean'],
+            'restrict_today_report'  => ['nullable', 'boolean'],
         ]);
 
-        $staffUser->name      = $validated['name'];
-        $staffUser->username  = $validated['username'];
-        $staffUser->email     = $validated['email'] ?? null;
-        $staffUser->title     = $validated['title'] ?? null;
-        $staffUser->is_active = $request->boolean('is_active');
+        $staffUser->name                 = $validated['name'];
+        $staffUser->username             = $validated['username'];
+        $staffUser->email                = $validated['email'] ?? null;
+        $staffUser->title                = $validated['title'] ?? null;
+        $staffUser->is_active            = $request->boolean('is_active');
+        $staffUser->restrict_today_report = $request->boolean('restrict_today_report');
 
         if (!empty($validated['password'])) {
             $staffUser->password = Hash::make($validated['password']);

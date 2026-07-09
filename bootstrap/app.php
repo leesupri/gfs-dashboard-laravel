@@ -7,13 +7,16 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function ($middleware) {
         $middleware->alias([
-            'staff.auth'       => \App\Http\Middleware\StaffAuth::class,
-            'route.permission' => \App\Http\Middleware\CheckRoutePermission::class,
+            'staff.auth'             => \App\Http\Middleware\StaffAuth::class,
+            'route.permission'       => \App\Http\Middleware\CheckRoutePermission::class,
+            'staff.api.auth'         => \App\Http\Middleware\StaffApiAuth::class,
+            'restrict.today.report'  => \App\Http\Middleware\RestrictTodayReport::class,
         ]);
 
         // Terminable — runs after response is sent; logs every page visit + errors.

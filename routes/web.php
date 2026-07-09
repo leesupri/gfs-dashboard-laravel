@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CashierShiftController;
 use App\Http\Controllers\DailyCategoryController;
 use App\Http\Controllers\DailyHourController;
+use App\Http\Controllers\DailyItemCountController;
 use App\Http\Controllers\NoSalesReceiptDetailController;
 use App\Http\Controllers\OpeningDayController;
 use App\Http\Controllers\UserPageLogController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\TicketManagementController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\PrinterSettingController;
 use App\Http\Controllers\CostAlertSettingController;
+use App\Http\Controllers\StockCountController;
 
 // ── Public ticket routes (no auth required) ──────────────────────────────────
 Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
@@ -52,7 +54,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['staff.auth', 'route.permission'])->group(function () {
-   
+
 
     Route::get('/settings/staff', [StaffSettingController::class, 'index'])->name('settings.staff');
     Route::post('/settings/staff', [StaffSettingController::class, 'store'])->name('settings.staff.store');
@@ -69,7 +71,7 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
 //     ]);
 // })->name('dashboard');
 Route::redirect('/', '/welcome');
-Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+Route::middleware(['staff.auth', 'route.permission', 'restrict.today.report'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/item-sales', [ItemSalesController::class, 'index'])->name('itemSales.index');
     Route::get('/item-sales/export', [ItemSalesController::class, 'exportCsv'])->name('itemSales.export');
@@ -101,8 +103,9 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::get('/reports/cashier-shift', [CashierShiftController::class, 'index'])->name('reports.cashierShift');
     Route::get('/reports/opening-day', [OpeningDayController::class, 'index'])->name('reports.openingDay');
     Route::get('/reports/no-sales-receipt-detail', [NoSalesReceiptDetailController::class, 'index'])->name('reports.noSalesReceiptDetail');
-    Route::get('/reports/daily-category', [DailyCategoryController::class, 'index'])->name('reports.dailyCategory');
-    Route::get('/reports/daily-hour',     [DailyHourController::class,     'index'])->name('reports.dailyHour');
+    Route::get('/reports/daily-category',   [DailyCategoryController::class,  'index'])->name('reports.dailyCategory');
+    Route::get('/reports/daily-hour',       [DailyHourController::class,      'index'])->name('reports.dailyHour');
+    Route::get('/reports/daily-item-count', [DailyItemCountController::class, 'index'])->name('reports.dailyItemCount');
     Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
     Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
     
@@ -164,4 +167,13 @@ Route::middleware(['staff.auth', 'route.permission'])->group(function () {
     Route::post('/settings/cost-alert/test',    [CostAlertSettingController::class, 'sendTest'])->name('settings.costAlert.test');
     Route::post('/settings/cost-alert/run',     [CostAlertSettingController::class, 'runCheck'])->name('settings.costAlert.run');
 });
+
+// ── Stock counts ──────────────────────────────────────────────────────────────
+Route::middleware(['staff.auth', 'route.permission'])->group(function () {
+    Route::get('/stock/counts',                  [StockCountController::class, 'index'])->name('stock.counts.index');
+    Route::get('/stock/counts/{id}',             [StockCountController::class, 'show'])->name('stock.counts.show');
+    Route::post('/stock/counts/{id}/approve',    [StockCountController::class, 'approve'])->name('stock.counts.approve');
+    Route::post('/stock/counts/{id}/reject',     [StockCountController::class, 'reject'])->name('stock.counts.reject');
+});
+
 
