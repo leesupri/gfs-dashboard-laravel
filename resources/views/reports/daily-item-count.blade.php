@@ -304,6 +304,7 @@
 
     {{-- Items grouped by category --}}
     @foreach($tGrouped as $catName => $catRows)
+      @php $catTotal = $catRows->sum('total_qty'); @endphp
       <div class="t-cat">{{ strtoupper($catName ?: 'UNCATEGORIZED') }}</div>
       <table>
         <thead style="display:none"><tr><th>Item</th><th>Qty</th></tr></thead>
@@ -315,6 +316,12 @@
           </tr>
         @endforeach
         </tbody>
+        <tfoot>
+          <tr class="t-subtotal">
+            <td class="td-name">Subtotal</td>
+            <td class="td-qty">{{ number_format($catTotal, 0) }}</td>
+          </tr>
+        </tfoot>
       </table>
     @endforeach
 
@@ -344,21 +351,36 @@ function printThermal() {
 <style>
 @page { size: 80mm auto; margin: 0; }
 * { box-sizing: border-box; }
-body { font-family: 'Courier New', Courier, monospace; font-size: 8pt; color: #000; background: #fff; width: 72mm; padding: 4mm 3mm; margin: 0; }
+body {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 9pt;
+  color: #000;
+  background: #fff;
+  width: 72mm;
+  padding: 4mm 3mm;
+  margin: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 .t-center  { text-align: center; }
-.t-title   { font-size: 10pt; font-weight: bold; text-align: center; }
-.t-sub     { font-size: 7pt; text-align: center; color: #333; }
-.t-dash    { border-top: 1px dashed #000; margin: 1.5mm 0; }
-.t-solid   { border-top: 1px solid #000; margin: 1.5mm 0; }
-.t-kpi     { display: flex; justify-content: space-between; font-size: 7.5pt; padding: 0.4mm 0; }
-.t-cat     { font-weight: bold; text-transform: uppercase; font-size: 7pt; letter-spacing: 0.03em; padding: 1.5mm 0 0.5mm; border-top: 1px dashed #000; }
-.t-footer  { display: flex; justify-content: space-between; font-weight: bold; font-size: 8.5pt; padding-top: 1.5mm; margin-top: 1mm; border-top: 1px solid #000; }
-.t-printed { font-size: 6.5pt; text-align: center; color: #666; margin-top: 3mm; }
+.t-title   { font-size: 11pt; font-weight: bold; text-align: center; letter-spacing: 0.03em; }
+.t-sub     { font-size: 8pt; text-align: center; color: #333; margin: 0.5mm 0; }
+.t-dash    { border-top: 1px dashed #000; margin: 2mm 0; }
+.t-solid   { border-top: 2px solid #000; margin: 2mm 0; }
+.t-kpi     { display: flex; justify-content: space-between; font-size: 8.5pt; padding: 0.6mm 0; }
+.t-cat     { font-weight: bold; text-transform: uppercase; font-size: 8pt;
+             letter-spacing: 0.05em; padding: 2mm 0 1mm; border-top: 1px dashed #000; margin-top: 1mm; }
+.t-footer  { display: flex; justify-content: space-between; font-weight: bold;
+             font-size: 9.5pt; padding-top: 2mm; margin-top: 1.5mm; border-top: 2px solid #000; }
+.t-printed { font-size: 7.5pt; text-align: center; color: #555; margin-top: 4mm; }
 table      { width: 100%; border-collapse: collapse; }
 thead      { display: none; }
-td         { font-size: 7.5pt; padding: 0.5mm 0; vertical-align: top; }
-.td-name   { width: 78%; word-break: break-word; padding-right: 1mm; }
-.td-qty    { width: 22%; text-align: right; font-weight: bold; white-space: nowrap; }
+td         { font-size: 8.5pt; padding: 0.8mm 0; vertical-align: top; line-height: 1.3; }
+.td-name   { width: 76%; word-break: break-word; padding-right: 1mm; }
+.td-qty    { width: 24%; text-align: right; font-weight: bold; white-space: nowrap; }
+.t-subtotal td { border-top: 1px solid #000; font-weight: bold; font-size: 8.5pt; padding-top: 1mm; margin-top: 0.5mm; }
 </style>
 </head>
 <body>${content}</body>
