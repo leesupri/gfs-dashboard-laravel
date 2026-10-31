@@ -11,8 +11,8 @@ class MarketListController extends Controller
 {
     public function marketList(Request $request)
     {
-        $start = $request->get('start', '');
-        $end = $request->get('end', '');
+        $start = trim((string) $request->get('start', ''));
+        $end = trim((string) $request->get('end', ''));
         $category = trim((string) $request->get('category', ''));
         $q = trim((string) $request->get('q', ''));
         $export = trim((string) $request->get('export', ''));
